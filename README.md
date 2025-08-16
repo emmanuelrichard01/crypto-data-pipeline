@@ -1,6 +1,6 @@
 # 🚀 Crypto Data Pipeline
 
-[![CI](https://github.com/your-username/crypto-data-pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/your-username/crypto-data-pipeline/actions/workflows/ci.yml)
+[![CI](https://github.com/emmanuelrichard01/crypto-data-pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/emmanuelrichard01/crypto-data-pipeline/actions/workflows/ci.yml)
 [![Dockerized](https://img.shields.io/badge/docker-ready-blue)](https://www.docker.com/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Status](https://img.shields.io/badge/status-production--ready-success)](#)
@@ -67,7 +67,7 @@ graph TD
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/crypto-data-pipeline.git
+git clone https://github.com/emmanuelrichard01/crypto-data-pipeline.git
 cd crypto-data-pipeline
 
 # Build and start services
@@ -95,7 +95,7 @@ make dbt-run
 1. **Clone the repository**:
 
    ```bash
-   git clone https://github.com/your-username/crypto-data-pipeline.git
+   git clone https://github.com/emmanuelrichard01/crypto-data-pipeline.git
    cd crypto-data-pipeline
    ```
 
@@ -365,7 +365,7 @@ We welcome contributions! Please follow these steps:
 
 ## 👨‍💻 Author
 
-Built by [Your Name](https://github.com/your-github)
+Built by [Emmanuel Richard](https://github.com/emmanuelrichard01)
 
 ## 📜 License
 
