@@ -1,0 +1,133 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    container_name: crypto_warehouse
+    environment:
+      POSTGRES_DB: crypto_warehouse
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: crypto_password_123
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Redis for caching and task queue
+  redis:
+    image: redis:7-alpine
+    container_name: crypto_redis
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+
+  # Main Pipeline Application
+  crypto-pipeline:
+    build:
+      context: .
+      dockerfile: Dockerfile.pipeline
+    container_name: crypto_pipeline
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=crypto_warehouse
+      - DB_USER=postgres
+      - DB_PASSWORD=crypto_password_123
+      - REDIS_URL=redis://redis:6379
+      - LOG_LEVEL=INFO
+      - COINGECKO_API_KEY=CG-Ug4vCfhbKMgCqUFB6DXaDnoL
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD-SHELL', 'python -c "import sys; sys.exit(0)"']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # DBT Service
+  dbt-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.dbt
+    container_name: crypto_dbt
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=crypto_warehouse
+      - DB_USER=postgres
+      - DB_PASSWORD=crypto_password_123
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./dbt:/app/dbt
+      - ./dbt_logs:/app/logs
+      - ./profiles.yml:/root/.dbt/profiles.yml
+    command: ['dbt', 'run', '--project-dir', '/app/dbt']
+    healthcheck:
+      test:
+        ['CMD-SHELL', 'dbt debug --project-dir /app/dbt > /dev/null || exit 1']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Dashboard Service (Streamlit)
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile.dashboard
+    container_name: crypto_dashboard
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=crypto_warehouse
+      - DB_USER=postgres
+      - DB_PASSWORD=crypto_password_123
+    ports:
+      - '8501:8501'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test:
+        ['CMD-SHELL', 'wget --spider http://localhost:8501/healthz || exit 1']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Monitoring Service (Grafana)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: crypto_grafana
+    ports:
+      - '3001:3000'
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
+  redis_data:
+  grafana_data:
+
+networks:
+  default:
+    name: crypto_pipeline_network

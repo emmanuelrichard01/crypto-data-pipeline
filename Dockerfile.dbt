@@ -1,0 +1,30 @@
+FROM python:3.11-slim-bullseye
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y python3-distutils \
+    gcc \
+    build-essential \
+    python3-dev \
+    postgresql-client \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Upgrade pip and install dbt
+RUN pip install --upgrade pip setuptools wheel
+RUN pip install 'protobuf<5.0'
+RUN pip install --default-timeout=200 --retries=10 \
+    dbt-postgres==1.7.0 dbt-core==1.7.0 \
+    -i https://pypi.org/simple
+
+# Copy dbt project and config
+COPY dbt/ ./dbt/
+COPY profiles.yml .
+
+ENV PYTHONPATH=/app
+
+CMD ["dbt", "run", "--project-dir", "/app/dbt"]
+
+LABEL maintainer="emma.moghalu@gmail.com"
+LABEL description="DBT transformations for crypto pipeline"

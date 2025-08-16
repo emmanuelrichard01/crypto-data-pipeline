@@ -1,0 +1,38 @@
+FROM python:3.11-slim-bullseye
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    gcc \
+    libpq-dev \
+    postgresql-client \
+    libffi-dev \
+    libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Upgrade pip and core build tools
+RUN pip install --upgrade pip setuptools wheel build
+
+# Install Python requirements
+COPY requirements.txt .
+RUN pip install --only-binary=:all: --default-timeout=100 --retries=10 --no-cache-dir -r requirements.txt
+
+# Copy alembic configuration
+COPY alembic.ini ./alembic.ini
+COPY alembic/ ./alembic/
+
+# Copy source code
+COPY src/ ./src/
+COPY main.py .
+
+# Create logs directory
+RUN mkdir -p /app/logs
+
+ENV PYTHONPATH="/app/src:/app"
+
+CMD ["python", "main.py"]
+
+LABEL maintainer="emma.moghalu@gmail.com"
+LABEL description="Crypto price extraction pipeline"

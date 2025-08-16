@@ -1,0 +1,65 @@
+version: 2
+
+sources:
+  - name: raw
+    database: crypto_warehouse
+    schema: public
+    tables:
+      - name: crypto_prices_raw
+        description: 'Raw crypto price data from the pipeline'
+      - name: pipeline_runs
+        description: 'Pipeline run logs from orchestration layer'
+
+models:
+  - name: stg_crypto_prices
+    description: 'Cleaned and standardized crypto price data'
+    columns:
+      - name: price_id
+        description: 'Unique identifier for each price record'
+        tests:
+          - unique
+          - not_null
+      - name: symbol
+        description: 'Cryptocurrency symbol'
+        tests:
+          - not_null
+      - name: price_usd
+        description: 'Price in USD'
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+      - name: market_cap
+        description: 'Market capitalization in USD'
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+      - name: extracted_at
+        description: 'Timestamp when data was extracted'
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: "{{ column_name }} <= CURRENT_TIMESTAMP"
+      - name: volume_24h
+        description: '24-hour trading volume in USD'
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+
+  - name: stg_pipeline_runs
+    description: 'Standardized metadata for pipeline stages and statuses'
+    columns:
+      - name: run_id
+        description: 'Pipeline run identifier'
+        tests:
+          - not_null
+      - name: stage
+        description: 'ETL stage (extract, load, transform)'
+        tests:
+          - not_null
+      - name: status
+        description: 'Run outcome (running, success, failed)'
+        tests:
+          - not_null
