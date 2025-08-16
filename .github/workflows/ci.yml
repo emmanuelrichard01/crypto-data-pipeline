@@ -16,12 +16,22 @@ jobs:
           POSTGRES_PASSWORD: crypto_password_123
           POSTGRES_DB: crypto_warehouse
         options: >-
-          --health-cmd pg_isready
+          --health-cmd pg_isready -U postgres
           --health-interval 10s
           --health-timeout 5s
-          --health-retries 5
+          --health-retries 10
         ports:
           - 5432:5432
+
+    env:
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_NAME: crypto_warehouse
+      DB_USER: postgres
+      DB_PASSWORD: crypto_password_123
+      COINGECKO_API_KEY: test_api_key
+      LOG_LEVEL: INFO
+      ENABLE_ALERTS: false
 
     steps:
       - uses: actions/checkout@v3
@@ -34,22 +44,19 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install -r requirements-dashboard.txt
+          pip install -r requirements.txt -r requirements-dashboard.txt
           pip install pytest pytest-asyncio
 
-      - name: Run tests
+      - name: Wait for DB to be ready
         run: |
-          PYTHONPATH=. pytest tests/ -v
-        env:
-          DB_HOST: localhost
-          DB_PORT: 5432
-          DB_NAME: crypto_warehouse
-          DB_USER: postgres
-          DB_PASSWORD: crypto_password_123
-          COINGECKO_API_KEY: test_api_key
-          LOG_LEVEL: INFO
-          ENABLE_ALERTS: false
+          for i in {1..10}; do
+            pg_isready -h localhost -p 5432 -U postgres && break
+            echo "Postgres not ready yet..."
+            sleep 3
+          done
+
+      - name: Run tests
+        run: PYTHONPATH=. pytest tests/ -v
 
   lint:
     runs-on: ubuntu-latest
@@ -61,21 +68,18 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
+      - name: Install linting tools
         run: |
           python -m pip install --upgrade pip
           pip install flake8 black
 
       - name: Lint with flake8
         run: |
-          # stop the build if there are Python syntax errors or undefined names
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          # exit-zero treats all errors as warnings
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
       - name: Check code formatting with black
-        run: |
-          black --check .
+        run: black --check .
 
   dbt-test:
     runs-on: ubuntu-latest
@@ -86,12 +90,22 @@ jobs:
           POSTGRES_PASSWORD: crypto_password_123
           POSTGRES_DB: crypto_warehouse
         options: >-
-          --health-cmd pg_isready
+          --health-cmd pg_isready -U postgres
           --health-interval 10s
           --health-timeout 5s
-          --health-retries 5
+          --health-retries 10
         ports:
           - 5433:5432
+
+    env:
+      DB_HOST: localhost
+      DB_PORT: 5433
+      DB_NAME: crypto_warehouse
+      DB_USER: postgres
+      DB_PASSWORD: crypto_password_123
+      COINGECKO_API_KEY: test_api_key
+      LOG_LEVEL: INFO
+      ENABLE_ALERTS: false
 
     steps:
       - uses: actions/checkout@v3
@@ -106,30 +120,18 @@ jobs:
           python -m pip install --upgrade pip
           pip install dbt-postgres
 
-      - name: Run dbt debug
+      - name: Wait for DB to be ready
         run: |
-          dbt debug
+          for i in {1..10}; do
+            pg_isready -h localhost -p 5433 -U postgres && break
+            echo "Postgres not ready yet..."
+            sleep 3
+          done
+
+      - name: Run dbt debug
+        run: dbt debug
         working-directory: dbt
-        env:
-          DB_HOST: localhost
-          DB_PORT: 5433
-          DB_NAME: crypto_warehouse
-          DB_USER: postgres
-          DB_PASSWORD: crypto_password_123
-          COINGECKO_API_KEY: test_api_key
-          LOG_LEVEL: INFO
-          ENABLE_ALERTS: false
 
       - name: Run dbt tests
-        run: |
-          dbt test
+        run: dbt test
         working-directory: dbt
-        env:
-          DB_HOST: localhost
-          DB_PORT: 5433
-          DB_NAME: crypto_warehouse
-          DB_USER: postgres
-          DB_PASSWORD: crypto_password_123
-          COINGECKO_API_KEY: test_api_key
-          LOG_LEVEL: INFO
-          ENABLE_ALERTS: false
