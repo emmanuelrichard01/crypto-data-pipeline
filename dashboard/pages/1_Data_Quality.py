@@ -15,7 +15,13 @@ st.title("🔍 Data Quality Dashboard")
 # Database connection
 @st.cache_resource
 def get_database_connection():
-    conn_str = f"postgresql://{os.getenv('DB_USER', 'postgres')}:{os.getenv('DB_PASSWORD', 'crypto_password_123')}@{os.getenv('DB_HOST', 'localhost')}:{os.getenv('DB_PORT', '5432')}/{os.getenv('DB_NAME', 'crypto_warehouse')}"
+    conn_str = (
+        f"postgresql://{os.getenv('DB_USER', 'postgres')}:"
+        f"{os.getenv('DB_PASSWORD', 'crypto_password_123')}"
+        f"@{os.getenv('DB_HOST', 'localhost')}:"
+        f"{os.getenv('DB_PORT', '5432')}/"
+        f"{os.getenv('DB_NAME', 'crypto_warehouse')}"
+    )
     return create_engine(conn_str)
 
 

@@ -8,9 +8,6 @@ import os
 import sys
 from pathlib import Path
 
-# Add src to Python path
-sys.path.insert(0, str(Path(__file__).parent / "src"))
-
 from src.config.settings import DatabaseConfig, PipelineConfig
 from src.pipeline.orchestrator import CryptoPipelineOrchestrator
 from src.scheduler.job_scheduler import PipelineScheduler
@@ -65,17 +62,14 @@ def main():
         command = sys.argv[1]
 
         if command == "manual":
-            # Run manual extraction
             asyncio.run(run_manual_extraction())
         elif command == "schedule":
-            # Run scheduled pipeline
             run_scheduled_pipeline()
         else:
             logger.error(f"Unknown command: {command}")
             logger.info("Usage: python main.py [manual|schedule]")
             sys.exit(1)
     else:
-        # Default to manual extraction
         asyncio.run(run_manual_extraction())
 
 
