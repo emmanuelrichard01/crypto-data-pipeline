@@ -8,7 +8,7 @@ from pipeline.orchestrator import CryptoPipelineOrchestrator
 
 @pytest.mark.asyncio
 async def test_orchestrator_runs():
-    with patch("extractors.crypto_extractor.CryptoDataExtractor") as mock_extractor:
+    with patch("pipeline.orchestrator.CryptoDataExtractor") as mock_extractor:
         mock_extractor_instance = AsyncMock()
         mock_extractor_instance.__aenter__.return_value = mock_extractor_instance
         mock_extractor_instance.fetch_crypto_prices.return_value = [
@@ -54,7 +54,7 @@ async def test_orchestrator_handles_extraction_error():
 
 @pytest.mark.asyncio
 async def test_orchestrator_handles_loading_error():
-    with patch("extractors.crypto_extractor.CryptoDataExtractor") as mock_extractor:
+    with patch("pipeline.orchestrator.CryptoDataExtractor") as mock_extractor:
         mock_extractor_instance = AsyncMock()
         mock_extractor_instance.__aenter__.return_value = mock_extractor_instance
         mock_extractor_instance.fetch_crypto_prices.return_value = [

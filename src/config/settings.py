@@ -62,9 +62,17 @@ class PipelineConfig:
 
 
 def __post_init__(self):
+    if self.extraction_interval_minutes <= 0:
+        raise ValueError("EXTRACTION_INTERVAL_MINUTES must be positive")
+    if self.batch_size <= 0:
+        raise ValueError("BATCH_SIZE must be positive")
+    if self.max_retries < 0:
+        raise ValueError("MAX_RETRIES must be non-negative")
+    if self.timeout_seconds <= 0:
+        raise ValueError("TIMEOUT_SECONDS must be positive")
+
     crypto_env = os.getenv("CRYPTOCURRENCIES")
     if crypto_env is not None:
-        # Explicitly set but empty
         if not crypto_env.strip():
             raise ValueError("CRYPTOCURRENCIES list cannot be empty")
         self.cryptocurrencies = [c.strip() for c in crypto_env.split(",") if c.strip()]
@@ -77,14 +85,5 @@ def __post_init__(self):
             "chainlink",
         ]
 
-        # Validation
-        if self.extraction_interval_minutes <= 0:
-            raise ValueError("EXTRACTION_INTERVAL_MINUTES must be positive")
-        if self.batch_size <= 0:
-            raise ValueError("BATCH_SIZE must be positive")
-        if self.max_retries < 0:
-            raise ValueError("MAX_RETRIES must be non-negative")
-        if self.timeout_seconds <= 0:
-            raise ValueError("TIMEOUT_SECONDS must be positive")
-        if not self.cryptocurrencies:
-            raise ValueError("CRYPTOCURRENCIES list cannot be empty")
+    if not self.cryptocurrencies:
+        raise ValueError("CRYPTOCURRENCIES list cannot be empty")
