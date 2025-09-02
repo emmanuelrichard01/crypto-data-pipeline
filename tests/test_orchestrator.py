@@ -33,7 +33,7 @@ async def test_orchestrator_runs():
 
 @pytest.mark.asyncio
 async def test_orchestrator_handles_extraction_error():
-    with patch("extractors.crypto_extractor.CryptoDataExtractor") as mock_extractor:
+    with patch("pipeline.orchestrator.CryptoDataExtractor") as mock_extractor:
         mock_extractor_instance = AsyncMock()
         mock_extractor_instance.__aenter__.return_value = mock_extractor_instance
         mock_extractor_instance.fetch_crypto_prices.side_effect = Exception("API Error")

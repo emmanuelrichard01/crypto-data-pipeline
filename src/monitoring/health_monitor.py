@@ -117,7 +117,7 @@ class PipelineHealthMonitor:
                     health_status["status"] = "unhealthy"
                     health_status["issues"] = ["Data is stale - no recent extractions"]
                 elif not recent_runs:
-                    health_status["status"] = "warning"
+                    health_status["status"] = "error"
                     health_status["issues"] = ["No pipeline run data available"]
 
                 return health_status

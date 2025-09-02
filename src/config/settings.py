@@ -60,21 +60,22 @@ class PipelineConfig:
     )
     cryptocurrencies: List[str] = field(default_factory=list)
 
-    def __post_init__(self):
-        # Resolve cryptocurrencies from env or fallback
-        crypto_env = os.getenv("CRYPTOCURRENCIES")
-        if crypto_env:
-            self.cryptocurrencies = [
-                c.strip() for c in crypto_env.split(",") if c.strip()
-            ]
-        elif not self.cryptocurrencies:
-            self.cryptocurrencies = [
-                "bitcoin",
-                "ethereum",
-                "cardano",
-                "polkadot",
-                "chainlink",
-            ]
+
+def __post_init__(self):
+    crypto_env = os.getenv("CRYPTOCURRENCIES")
+    if crypto_env is not None:
+        # Explicitly set but empty
+        if not crypto_env.strip():
+            raise ValueError("CRYPTOCURRENCIES list cannot be empty")
+        self.cryptocurrencies = [c.strip() for c in crypto_env.split(",") if c.strip()]
+    elif not self.cryptocurrencies:
+        self.cryptocurrencies = [
+            "bitcoin",
+            "ethereum",
+            "cardano",
+            "polkadot",
+            "chainlink",
+        ]
 
         # Validation
         if self.extraction_interval_minutes <= 0:
