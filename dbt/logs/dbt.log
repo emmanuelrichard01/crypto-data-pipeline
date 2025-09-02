@@ -26730,3 +26730,75 @@ Compilation Error
 [0m13:21:06.235564 [debug] [MainThread]: Command `dbt run` failed at 13:21:06.235353 after 1.98 seconds
 [0m13:21:06.237102 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7ff3bfa46c10>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7ff3bfa47e10>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7ff3bdfe5350>]}
 [0m13:21:06.238487 [debug] [MainThread]: Flushing usage events
+[0m13:25:08.816445 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f566e7206d0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f566ed1b610>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f566e720650>]}
+
+
+============================== 13:25:08.828284 | 35b2c6e7-c975-440b-862d-29892ac887a4 ==============================
+[0m13:25:08.828284 [info ] [MainThread]: Running with dbt=1.7.0
+[0m13:25:08.830038 [debug] [MainThread]: running dbt with arguments {'printer_width': '80', 'indirect_selection': 'eager', 'write_json': 'True', 'log_cache_events': 'False', 'partial_parse': 'True', 'cache_selected_only': 'False', 'profiles_dir': '/app', 'debug': 'False', 'version_check': 'True', 'log_path': '/app/dbt/logs', 'warn_error': 'None', 'fail_fast': 'False', 'use_colors': 'True', 'use_experimental_parser': 'False', 'no_print': 'None', 'quiet': 'False', 'warn_error_options': 'WarnErrorOptions(include=[], exclude=[])', 'invocation_command': 'dbt run --project-dir /app/dbt', 'log_format': 'default', 'introspect': 'True', 'target_path': 'None', 'static_parser': 'True', 'send_anonymous_usage_stats': 'True'}
+[0m13:25:09.286900 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': '35b2c6e7-c975-440b-862d-29892ac887a4', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f566ced2790>]}
+[0m13:25:09.494043 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'adapter_info', 'label': '35b2c6e7-c975-440b-862d-29892ac887a4', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f566e622950>]}
+[0m13:25:09.496891 [info ] [MainThread]: Registered adapter: postgres=1.7.0
+[0m13:25:09.554132 [debug] [MainThread]: checksum: 8434eacd4ffdf0ca3ab22bf0e2d55b45306c9599613e842b959405abc489e606, vars: {}, profile: , target: , version: 1.7.0
+[0m13:25:11.257390 [debug] [MainThread]: Partial parsing enabled: 0 files deleted, 0 files added, 48 files changed.
+[0m13:25:11.262115 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/jinja_helpers/slugify.sql
+[0m13:25:11.264839 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/generic_tests/sequential_values.sql
+[0m13:25:11.266767 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/generic_tests/not_constant.sql
+[0m13:25:11.270661 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/sql/get_tables_by_prefix_sql.sql
+[0m13:25:11.273297 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/sql/get_query_results_as_dict.sql
+[0m13:25:11.284078 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/sql/get_single_value.sql
+[0m13:25:11.296813 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/generic_tests/at_least_one.sql
+[0m13:25:11.301040 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/sql/safe_add.sql
+[0m13:25:11.303939 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/sql/nullcheck_table.sql
+[0m13:25:11.306399 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/sql/get_table_types_sql.sql
+[0m13:25:11.308617 [debug] [MainThread]: Partial parsing: updated file: crypto_analytics://models/staging/stg_pipeline_runs.sql
+[0m13:25:11.315503 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/generic_tests/not_empty_string.sql
+[0m13:25:11.318823 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/web/get_url_parameter.sql
+[0m13:25:11.321674 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/sql/width_bucket.sql
+[0m13:25:11.323609 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/generic_tests/not_null_proportion.sql
+[0m13:25:11.328628 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/generic_tests/fewer_rows_than.sql
+[0m13:25:11.333177 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/sql/unpivot.sql
+[0m13:25:11.335983 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/generic_tests/expression_is_true.sql
+[0m13:25:11.351398 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/generic_tests/mutually_exclusive_ranges.sql
+[0m13:25:11.356838 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/sql/haversine_distance.sql
+[0m13:25:11.386378 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/generic_tests/accepted_range.sql
+[0m13:25:11.389215 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/sql/union.sql
+[0m13:25:11.402118 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/sql/safe_divide.sql
+[0m13:25:11.405605 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/sql/safe_subtract.sql
+[0m13:25:11.407649 [debug] [MainThread]: Partial parsing: updated file: crypto_analytics://models/marts/mart_crypto_latest_prices.sql
+[0m13:25:11.411413 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/generic_tests/recency.sql
+[0m13:25:11.414757 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/sql/surrogate_key.sql
+[0m13:25:11.423027 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/sql/get_relations_by_pattern.sql
+[0m13:25:11.425995 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/jinja_helpers/_is_ephemeral.sql
+[0m13:25:11.434849 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/sql/generate_surrogate_key.sql
+[0m13:25:11.437797 [debug] [MainThread]: Partial parsing: updated file: crypto_analytics://models/staging/stg_crypto_prices.sql
+[0m13:25:11.440083 [debug] [MainThread]: Partial parsing: updated file: crypto_analytics://models/marts/mart_pipeline_monitoring.sql
+[0m13:25:11.442084 [debug] [MainThread]: Partial parsing: updated file: crypto_analytics://models/marts/mart_crypto_hourly_performance.sql
+[0m13:25:11.446326 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/sql/star.sql
+[0m13:25:11.449569 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/sql/nullcheck.sql
+[0m13:25:11.451670 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/generic_tests/unique_combination_of_columns.sql
+[0m13:25:11.454154 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/sql/groupby.sql
+[0m13:25:11.456619 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/sql/generate_series.sql
+[0m13:25:11.458385 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/generic_tests/equality.sql
+[0m13:25:11.462936 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/generic_tests/equal_rowcount.sql
+[0m13:25:11.464827 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/sql/pivot.sql
+[0m13:25:11.466580 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/sql/get_relations_by_prefix.sql
+[0m13:25:11.469399 [debug] [MainThread]: Partial parsing: updated file: crypto_analytics://models/intermediate/int_crypto_hourly_aggs.sql
+[0m13:25:11.472338 [debug] [MainThread]: Partial parsing: updated file: crypto_analytics://models/intermediate/int_crypto_daily_aggs.sql
+[0m13:25:11.481617 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/generic_tests/not_accepted_values.sql
+[0m13:25:11.483628 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/generic_tests/relationships_where.sql
+[0m13:25:11.486724 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/sql/get_tables_by_pattern_sql.sql
+[0m13:25:11.490740 [debug] [MainThread]: Partial parsing: updated file: dbt_utils://macros/sql/get_filtered_columns_in_relation.sql
+[0m13:25:11.653166 [error] [MainThread]: Encountered an error:
+Compilation Error
+  unexpected EOF, expected }}, got "max_value }{%- endif %}
+  )
+  
+  select *
+  from validation_errors
+  
+  {% endmacro %}"
+[0m13:25:11.655467 [debug] [MainThread]: Resource report: {"command_name": "run", "command_wall_clock_time": 2.9180803, "process_user_time": 10.879983, "process_kernel_time": 3.780907, "process_mem_max_rss": "114764", "process_out_blocks": "1880", "command_success": false, "process_in_blocks": "0"}
+[0m13:25:11.656973 [debug] [MainThread]: Command `dbt run` failed at 13:25:11.656777 after 2.92 seconds
+[0m13:25:11.658253 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f56730bd190>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f566cbbb350>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7f566cd23210>]}
+[0m13:25:11.660406 [debug] [MainThread]: Flushing usage events

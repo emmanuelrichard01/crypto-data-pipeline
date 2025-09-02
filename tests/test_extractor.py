@@ -1,5 +1,6 @@
-import pytest
 from unittest.mock import AsyncMock, patch
+
+import pytest
 
 from config.settings import PipelineConfig
 from extractors.crypto_extractor import CryptoDataExtractor
