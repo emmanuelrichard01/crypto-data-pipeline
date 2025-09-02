@@ -65,8 +65,8 @@ Arguments:
                else_value=0,
                quote_identifiers=True,
                distinct=False) %}
-    {% for value in values %}
-        {{ agg }}(
+  {% for value in values %}
+    {{ agg }}(
       {% if distinct %} distinct {% endif %}
       case
       when {{ column }} {{ cmp }} '{{ dbt.escape_single_quotes(value) }}'
@@ -75,12 +75,12 @@ Arguments:
       end
     )
     {% if alias %}
-            {% if quote_identifiers %}
+      {% if quote_identifiers %}
             as {{ adapter.quote(prefix ~ value ~ suffix) }}
       {% else %}
         as {{ dbt_utils.slugify(prefix ~ value ~ suffix) }}
-            {% endif %}
-        {% endif %}
-        {% if not loop.last %},{% endif %}
-    {% endfor %}
+      {% endif %}
+    {% endif %}
+    {% if not loop.last %},{% endif %}
+  {% endfor %}
 {% endmacro %}

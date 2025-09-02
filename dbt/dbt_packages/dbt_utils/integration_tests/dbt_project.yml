@@ -20,6 +20,10 @@ clean-targets:         # directories to be removed by `dbt clean`
     - "dbt_modules"
     - "dbt_packages"
 
+flags:
+    send_anonymous_usage_stats: False
+    use_colors: True
+
 dispatch:
   - macro_namespace: 'dbt_utils'
     search_order: ['dbt_utils_integration_tests', 'dbt_utils']
@@ -48,8 +52,30 @@ seeds:
           num_buckets: integer
           min_value: float
           max_value: float
+      
+      data_unpivot_quote:
+        +quote_columns: true
+
+      data_unpivot_quote_expected:
+        +quote_columns: true
 
     schema_tests:
       data_test_sequential_timestamps:
         +column_types:
           my_timestamp: timestamp
+
+      data_test_equality_floats_a:
+        +column_types:
+          float_number: float
+
+      data_test_equality_floats_columns_a:
+        +column_types:
+          float_number: float
+
+      data_test_equality_floats_b:
+        +column_types:
+          float_number: float
+
+      data_test_equality_floats_columns_b:
+        +column_types:
+          float_number: float

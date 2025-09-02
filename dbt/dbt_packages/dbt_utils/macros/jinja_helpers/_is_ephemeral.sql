@@ -1,7 +1,7 @@
 {% macro _is_ephemeral(obj, macro) %}
-{%- if obj.is_cte -%}
-{% set ephemeral_prefix = api.Relation.add_ephemeral_prefix('') %}
-{% if obj.name.startswith(ephemeral_prefix) %}
+    {%- if obj.is_cte -%}
+        {% set ephemeral_prefix = api.Relation.add_ephemeral_prefix('') %}
+        {% if obj.name.startswith(ephemeral_prefix) %}
             {% set model_name = obj.name[(ephemeral_prefix|length):] %}
         {% else %}
             {% set model_name = obj.name %}

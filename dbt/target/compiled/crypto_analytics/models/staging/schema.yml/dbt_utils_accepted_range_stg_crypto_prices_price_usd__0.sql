@@ -1,17 +1,20 @@
-with meet_condition as (
-    select *
-    from "crypto_warehouse"."public_staging"."stg_crypto_prices"
+
+
+with meet_condition as(
+  select *
+  from "crypto_warehouse"."public_staging"."stg_crypto_prices"
 ),
 
 validation_errors as (
-    select *
-    from meet_condition
-    where
+  select *
+  from meet_condition
+  where
     -- never true, defaults to an empty result set. Exists to ensure any combo of the `or` clauses below succeeds
-        1 = 2
-        -- records with a value >= min_value are permitted. The `not` flips this to find records that don't meet the rule.
-        or not price_usd >= 0
+    1 = 2
+    -- records with a value >= min_value are permitted. The `not` flips this to find records that don't meet the rule.
+    or not price_usd >= 0
 )
 
 select *
 from validation_errors
+

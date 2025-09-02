@@ -15,7 +15,6 @@ dbt_project.yml file with a value of True. \
 The {}.{} model triggered this warning. \
 '.format(model.package_name, model.name) -%}
 
-    {%- do exceptions.raise_compiler_error(error_message) -%}
+{%- do exceptions.raise_compiler_error(error_message) -%}
 
 {%- endmacro -%}
-

@@ -1,13 +1,8 @@
 {% test not_accepted_values(model, column_name, values, quote=True) %}
-    {{ return(adapter.dispatch('test_not_accepted_values', 'dbt_utils')(model, column_name, values, quote)) }}
+  {{ return(adapter.dispatch('test_not_accepted_values', 'dbt_utils')(model, column_name, values, quote)) }}
 {% endtest %}
 
 {% macro default__test_not_accepted_values(model, column_name, values, quote=True) %}
-    
-
-
-
-
 with all_values as (
 
     select distinct
@@ -25,13 +20,13 @@ validation_errors as (
     from all_values
     where value_field in (
         {% for value in values -%}
-    {% if quote -%}
+            {% if quote -%}
             '{{ value }}'
             {%- else -%}
-        {{ value }}
-    {%- endif -%}
-    {%- if not loop.last -%},{%- endif %}
-{%- endfor %}
+            {{ value }}
+            {%- endif -%}
+            {%- if not loop.last -%},{%- endif %}
+        {%- endfor %}
         )
 
 )

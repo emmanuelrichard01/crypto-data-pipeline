@@ -1,5 +1,5 @@
 {% macro assert_equal_values(actual_object, expected_object) %}
-    {% if not execute %}
+{% if not execute %}
 
     {# pass #}
 

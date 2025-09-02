@@ -3,19 +3,19 @@
 {% endmacro %}
 
 {% macro default__nullcheck(cols) %}
-    {%- for col in cols %}
+{%- for col in cols %}
 
-        {% if col.is_string() -%}
+    {% if col.is_string() -%}
 
     nullif({{col.name}},'') as {{col.name}}
 
     {%- else -%}
 
-            {{col.name}}
+    {{col.name}}
 
-        {%- endif -%}
+    {%- endif -%}
 
-        {%- if not loop.last -%} , {%- endif -%}
+{%- if not loop.last -%} , {%- endif -%}
 
-    {%- endfor -%}
+{%- endfor -%}
 {% endmacro %}

@@ -1,3 +1,5 @@
+
+
 WITH latest_prices AS (
     SELECT
         symbol,

@@ -1,3 +1,5 @@
+
+
 WITH source_data AS (
     SELECT
         id AS price_id,

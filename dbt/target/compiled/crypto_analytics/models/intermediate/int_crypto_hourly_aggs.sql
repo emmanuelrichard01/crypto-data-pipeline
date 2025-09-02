@@ -1,3 +1,5 @@
+
+
 WITH base_data AS (
     SELECT
         symbol,

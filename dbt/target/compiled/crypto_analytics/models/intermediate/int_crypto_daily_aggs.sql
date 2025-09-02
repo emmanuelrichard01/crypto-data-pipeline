@@ -1,3 +1,5 @@
+
+
 SELECT
     symbol,
     crypto_name,

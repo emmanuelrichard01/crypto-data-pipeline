@@ -19,8 +19,7 @@ with blank_data as (
     select
         3 as id,
         'string with trailing whitespace  ' as string_trim_whitespace_true,
-        -- This will cause a failure when trim_whitespace = true
-        '   ' as string_trim_whitespace_false
+        '   ' as string_trim_whitespace_false  -- This will cause a failure when trim_whitespace = true
 
     union all
 
