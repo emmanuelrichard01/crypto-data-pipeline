@@ -14,8 +14,9 @@ st.set_page_config(
     page_title="Crypto Pipeline Dashboard",
     page_icon="₿",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
 )
+
 
 # Add health check endpoint
 @st.cache_resource
@@ -27,6 +28,7 @@ def is_healthy():
         return True
     except Exception:
         return False
+
 
 # Health check route for Docker
 if st.experimental_get_query_params().get("healthz") is not None:
@@ -43,6 +45,7 @@ if st.experimental_get_query_params().get("healthz") is not None:
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 # ─────────────────────────────
 # 🔌 DATABASE CONNECTION
 # ─────────────────────────────
@@ -51,8 +54,9 @@ def get_engine():
     try:
         # Load environment variables
         from dotenv import load_dotenv
+
         load_dotenv()
-        
+
         conn_str = (
             f"postgresql://{os.getenv('DB_USER', 'postgres')}:"
             f"{os.getenv('DB_PASSWORD', 'crypto_password_123')}@"
@@ -66,6 +70,7 @@ def get_engine():
         st.error("❌ Could not connect to the database.")
         raise
 
+
 engine = get_engine()
 
 # ─────────────────────────────
@@ -74,13 +79,15 @@ engine = get_engine()
 st.sidebar.header("Controls")
 auto_refresh = st.sidebar.checkbox("Auto Refresh (every 30s)", value=False)
 selected_cryptos = st.sidebar.multiselect(
-    "Cryptos to Display", ["BTC", "ETH", "ADA", "DOT", "LINK"],
-    default=["BTC", "ETH", "ADA"]
+    "Cryptos to Display",
+    ["BTC", "ETH", "ADA", "DOT", "LINK"],
+    default=["BTC", "ETH", "ADA"],
 )
 
 if auto_refresh:
     time.sleep(30)
     st.experimental_rerun()
+
 
 # ─────────────────────────────
 # 📦 DATA LOADER FUNCTIONS
@@ -96,6 +103,7 @@ def load_latest_prices():
     """
     return pd.read_sql(query, engine)
 
+
 @st.cache_data(ttl=300)
 def load_hourly_performance(hours=48):
     query = """
@@ -107,6 +115,7 @@ def load_hourly_performance(hours=48):
     ORDER BY extraction_hour DESC
     """
     return pd.read_sql(query, engine, params=(hours,))
+
 
 @st.cache_data(ttl=300)
 def load_pipeline_monitoring():
@@ -120,6 +129,7 @@ def load_pipeline_monitoring():
     """
     return pd.read_sql(query, engine)
 
+
 @st.cache_data(ttl=60)
 def load_system_health():
     latest_query = "SELECT MAX(extracted_at) as latest FROM crypto_prices_raw"
@@ -131,6 +141,7 @@ def load_system_health():
     """
     return pd.read_sql(latest_query, engine), pd.read_sql(stats_query, engine)
 
+
 # ─────────────────────────────
 # 🏥 SYSTEM HEALTH SECTION
 # ─────────────────────────────
@@ -140,10 +151,10 @@ st.subheader("🏥 System Health")
 
 try:
     latest_df, count_df = load_system_health()
-    latest_time = pd.to_datetime(latest_df['latest'].iloc[0])
-    total_records = int(count_df['total_records'].iloc[0])
-    unique_symbols = int(count_df['unique_symbols'].iloc[0])
-    avg_price = float(count_df['avg_price'].iloc[0] or 0)
+    latest_time = pd.to_datetime(latest_df["latest"].iloc[0])
+    total_records = int(count_df["total_records"].iloc[0])
+    unique_symbols = int(count_df["unique_symbols"].iloc[0])
+    avg_price = float(count_df["avg_price"].iloc[0] or 0)
 
     minutes_since = (datetime.utcnow() - latest_time).total_seconds() / 60
     health_status = "🟢 Healthy" if minutes_since <= 120 else "🔴 Unhealthy"
@@ -176,16 +187,26 @@ try:
         with col:
             trend = row["price_change_pct_24h"]
             icon = "🟢" if trend > 0 else "🔴" if trend < 0 else "⚪"
-            st.metric(f"{icon} {row['symbol']} ({row['crypto_name']})",
-                      f"${row['current_price']:,.4f}",
-                      f"{trend:+.2f}%")
+            st.metric(
+                f"{icon} {row['symbol']} ({row['crypto_name']})",
+                f"${row['current_price']:,.4f}",
+                f"{trend:+.2f}%",
+            )
 
     st.dataframe(
-        prices_df[[
-            "symbol", "crypto_name", "current_price", "price_change_pct_24h",
-            "market_cap", "volume_24h", "market_cap_rank", "price_trend_category"
-        ]],
-        use_container_width=True
+        prices_df[
+            [
+                "symbol",
+                "crypto_name",
+                "current_price",
+                "price_change_pct_24h",
+                "market_cap",
+                "volume_24h",
+                "market_cap_rank",
+                "price_trend_category",
+            ]
+        ],
+        use_container_width=True,
     )
 except Exception as e:
     logger.exception("Failed to load price data")
@@ -205,9 +226,14 @@ try:
 
     if not hourly_df.empty:
         st.plotly_chart(
-            px.line(hourly_df, x="extraction_hour", y="avg_price_usd", color="symbol",
-                    title="Price Trend (Last 48 Hours)"),
-            use_container_width=True
+            px.line(
+                hourly_df,
+                x="extraction_hour",
+                y="avg_price_usd",
+                color="symbol",
+                title="Price Trend (Last 48 Hours)",
+            ),
+            use_container_width=True,
         )
 
         col1, col2 = st.columns(2)
@@ -215,14 +241,19 @@ try:
         with col1:
             fig = px.bar(
                 hourly_df.groupby("symbol")["price_volatility"].mean().reset_index(),
-                x="symbol", y="price_volatility", title="Average Volatility"
+                x="symbol",
+                y="price_volatility",
+                title="Average Volatility",
             )
             st.plotly_chart(fig, use_container_width=True)
 
         with col2:
             fig = px.histogram(
-                hourly_df, x="hourly_change_pct", color="symbol",
-                title="Hourly Change Distribution", marginal="box"
+                hourly_df,
+                x="hourly_change_pct",
+                color="symbol",
+                title="Hourly Change Distribution",
+                marginal="box",
             )
             st.plotly_chart(fig, use_container_width=True)
 
@@ -246,24 +277,42 @@ try:
         with col1:
             fig = px.bar(
                 monitor_df.groupby("stage")["success_rate_pct"].mean().reset_index(),
-                x="stage", y="success_rate_pct", color="success_rate_pct",
+                x="stage",
+                y="success_rate_pct",
+                color="success_rate_pct",
                 title="Avg Success Rate by Stage",
-                color_continuous_scale="RdYlGn"
+                color_continuous_scale="RdYlGn",
             )
             st.plotly_chart(fig, use_container_width=True)
 
         with col2:
-            volume_df = monitor_df.groupby("run_date")["total_records_processed"].sum().reset_index()
-            fig = px.line(volume_df, x="run_date", y="total_records_processed", title="Daily Records Processed")
+            volume_df = (
+                monitor_df.groupby("run_date")["total_records_processed"]
+                .sum()
+                .reset_index()
+            )
+            fig = px.line(
+                volume_df,
+                x="run_date",
+                y="total_records_processed",
+                title="Daily Records Processed",
+            )
             st.plotly_chart(fig, use_container_width=True)
 
         st.subheader("Recent Pipeline Runs")
         st.dataframe(
-            monitor_df.head(10)[[
-                "run_date", "stage", "total_runs", "successful_runs",
-                "success_rate_pct", "avg_duration_seconds", "latest_run_status"
-            ]],
-            use_container_width=True
+            monitor_df.head(10)[
+                [
+                    "run_date",
+                    "stage",
+                    "total_runs",
+                    "successful_runs",
+                    "success_rate_pct",
+                    "avg_duration_seconds",
+                    "latest_run_status",
+                ]
+            ],
+            use_container_width=True,
         )
     else:
         st.info("No recent pipeline runs found.")

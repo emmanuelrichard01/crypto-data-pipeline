@@ -10,6 +10,7 @@ from config.settings import PipelineConfig
 
 logger = logging.getLogger(__name__)
 
+
 class CryptoDataExtractor:
     def __init__(self, config: PipelineConfig):
         self.config = config
@@ -30,7 +31,7 @@ class CryptoDataExtractor:
         backoff.expo,
         (aiohttp.ClientError, asyncio.TimeoutError),
         max_tries=3,
-        max_time=60
+        max_time=60,
     )
     async def fetch_crypto_prices(self) -> List[Dict]:
         if not self.session:
@@ -41,7 +42,7 @@ class CryptoDataExtractor:
 
         headers = {
             "accept": "application/json",
-            "x-cg-demo-api-key": self.api_key  # CoinGecko demo header
+            "x-cg-demo-api-key": self.api_key,  # CoinGecko demo header
         }
 
         params = {
@@ -51,7 +52,7 @@ class CryptoDataExtractor:
             "per_page": len(self.config.cryptocurrencies),
             "page": 1,
             "sparkline": "false",
-            "price_change_percentage": "1h,24h,7d"
+            "price_change_percentage": "1h,24h,7d",
         }
 
         logger.info(f"Fetching data for: {crypto_ids}")
@@ -66,11 +67,15 @@ class CryptoDataExtractor:
             elif response.status == 401:
                 error_msg = await response.text()
                 logger.error(f"API Authentication Error {response.status}: {error_msg}")
-                raise aiohttp.ClientError(f"API Authentication Error {response.status}: Check your API key")
+                raise aiohttp.ClientError(
+                    f"API Authentication Error {response.status}: Check your API key"
+                )
             elif response.status == 403:
                 error_msg = await response.text()
                 logger.error(f"API Forbidden Error {response.status}: {error_msg}")
-                raise aiohttp.ClientError(f"API Forbidden Error {response.status}: Check your API key permissions")
+                raise aiohttp.ClientError(
+                    f"API Forbidden Error {response.status}: Check your API key permissions"
+                )
             elif response.status != 200:
                 error_msg = await response.text()
                 logger.error(f"API Error {response.status}: {error_msg}")
@@ -87,9 +92,15 @@ class CryptoDataExtractor:
                     "market_cap": coin.get("market_cap"),
                     "total_volume": coin.get("total_volume"),
                     "price_change_24h": coin.get("price_change_24h"),
-                    "price_change_percentage_24h": coin.get("price_change_percentage_24h"),
-                    "price_change_percentage_1h": coin.get("price_change_percentage_1h_in_currency"),
-                    "price_change_percentage_7d": coin.get("price_change_percentage_7d_in_currency"),
+                    "price_change_percentage_24h": coin.get(
+                        "price_change_percentage_24h"
+                    ),
+                    "price_change_percentage_1h": coin.get(
+                        "price_change_percentage_1h_in_currency"
+                    ),
+                    "price_change_percentage_7d": coin.get(
+                        "price_change_percentage_7d_in_currency"
+                    ),
                     "market_cap_rank": coin.get("market_cap_rank"),
                     "circulating_supply": coin.get("circulating_supply"),
                     "total_supply": coin.get("total_supply"),
@@ -97,7 +108,7 @@ class CryptoDataExtractor:
                     "ath": coin.get("ath"),
                     "atl": coin.get("atl"),
                     "last_updated": coin.get("last_updated"),
-                    "extracted_at": extraction_time
+                    "extracted_at": extraction_time,
                 }
                 for coin in data
             ]

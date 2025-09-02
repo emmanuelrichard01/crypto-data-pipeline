@@ -10,6 +10,7 @@ load_dotenv()
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class DatabaseConfig:
     host: str = os.getenv("DB_HOST", "localhost")
@@ -18,7 +19,7 @@ class DatabaseConfig:
     user: str = os.getenv("DB_USER", "postgres")
     password: str = os.getenv("DB_PASSWORD", "crypto_password_123")
     batch_size: int = int(os.getenv("BATCH_SIZE", "100"))
-    
+
     def __post_init__(self):
         # Validate required fields
         if not self.host:
@@ -33,27 +34,36 @@ class DatabaseConfig:
             raise ValueError("DB_PORT must be between 1 and 65535")
         if self.batch_size <= 0:
             raise ValueError("BATCH_SIZE must be positive")
-    
+
     @property
     def connection_string(self) -> str:
         return f"postgresql://{self.user}:{self.password}@{self.host}:{self.port}/{self.database}"
 
+
 @dataclass
 class PipelineConfig:
     cryptocurrencies: List[str] = None
-    extraction_interval_minutes: int = int(os.getenv("EXTRACTION_INTERVAL_MINUTES", "60"))
+    extraction_interval_minutes: int = int(
+        os.getenv("EXTRACTION_INTERVAL_MINUTES", "60")
+    )
     batch_size: int = int(os.getenv("BATCH_SIZE", "100"))
     max_retries: int = int(os.getenv("MAX_RETRIES", "3"))
     timeout_seconds: int = int(os.getenv("TIMEOUT_SECONDS", "30"))
-    
+
     def __post_init__(self):
         # Get cryptocurrencies from environment variable or use default
         crypto_env = os.getenv("CRYPTOCURRENCIES")
         if crypto_env:
             self.cryptocurrencies = [crypto.strip() for crypto in crypto_env.split(",")]
         elif self.cryptocurrencies is None:
-            self.cryptocurrencies = ["bitcoin", "ethereum", "cardano", "polkadot", "chainlink"]
-        
+            self.cryptocurrencies = [
+                "bitcoin",
+                "ethereum",
+                "cardano",
+                "polkadot",
+                "chainlink",
+            ]
+
         # Validate configuration parameters
         if self.extraction_interval_minutes <= 0:
             raise ValueError("EXTRACTION_INTERVAL_MINUTES must be positive")

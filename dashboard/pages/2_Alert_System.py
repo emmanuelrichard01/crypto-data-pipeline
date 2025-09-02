@@ -9,11 +9,13 @@ st.set_page_config(page_title="Alert System", page_icon="🚨", layout="wide")
 
 st.title("🚨 Real-Time Alert System")
 
+
 # DB connection
 @st.cache_resource
 def get_database_connection():
     conn_str = f"postgresql://{os.getenv('DB_USER', 'postgres')}:{os.getenv('DB_PASSWORD', 'crypto_password_123')}@{os.getenv('DB_HOST', 'localhost')}:{os.getenv('DB_PORT', '5432')}/{os.getenv('DB_NAME', 'crypto_warehouse')}"
     return create_engine(conn_str)
+
 
 @st.cache_data(ttl=60)
 def generate_alerts():
@@ -21,18 +23,22 @@ def generate_alerts():
     alerts = []
 
     # ─── Data Freshness ───
-    freshness_query = "SELECT MAX(extracted_at) AS latest_extraction FROM crypto_prices_raw"
+    freshness_query = (
+        "SELECT MAX(extracted_at) AS latest_extraction FROM crypto_prices_raw"
+    )
     freshness_df = pd.read_sql(freshness_query, engine)
-    latest_time = pd.to_datetime(freshness_df.iloc[0]['latest_extraction'])
+    latest_time = pd.to_datetime(freshness_df.iloc[0]["latest_extraction"])
 
     hours_since = (datetime.utcnow() - latest_time).total_seconds() / 3600
     if hours_since > 2:
-        alerts.append({
-            "type": "Data Freshness",
-            "severity": "High",
-            "message": f"No data extracted in the last {hours_since:.1f} hours",
-            "timestamp": datetime.utcnow()
-        })
+        alerts.append(
+            {
+                "type": "Data Freshness",
+                "severity": "High",
+                "message": f"No data extracted in the last {hours_since:.1f} hours",
+                "timestamp": datetime.utcnow(),
+            }
+        )
 
     # ─── Pipeline Failures ───
     failure_query = """
@@ -41,15 +47,17 @@ def generate_alerts():
     WHERE status = 'failed' AND started_at >= NOW() - INTERVAL '1 hour'
     """
     failure_df = pd.read_sql(failure_query, engine)
-    failed_count = failure_df['failed_runs'].iloc[0]
+    failed_count = failure_df["failed_runs"].iloc[0]
 
     if failed_count > 0:
-        alerts.append({
-            "type": "Pipeline Failure",
-            "severity": "High",
-            "message": f"{failed_count} pipeline run(s) failed in the last hour",
-            "timestamp": datetime.utcnow()
-        })
+        alerts.append(
+            {
+                "type": "Pipeline Failure",
+                "severity": "High",
+                "message": f"{failed_count} pipeline run(s) failed in the last hour",
+                "timestamp": datetime.utcnow(),
+            }
+        )
 
     # ─── Price Anomalies ───
     anomaly_query = """
@@ -59,14 +67,17 @@ def generate_alerts():
     """
     anomaly_df = pd.read_sql(anomaly_query, engine)
     for _, row in anomaly_df.iterrows():
-        alerts.append({
-            "type": "Price Anomaly",
-            "severity": "Medium",
-            "message": f"{row['symbol']} changed {row['price_change_pct_24h']:.1f}% in 24h",
-            "timestamp": datetime.utcnow()
-        })
+        alerts.append(
+            {
+                "type": "Price Anomaly",
+                "severity": "Medium",
+                "message": f"{row['symbol']} changed {row['price_change_pct_24h']:.1f}% in 24h",
+                "timestamp": datetime.utcnow(),
+            }
+        )
 
     return alerts
+
 
 # Display Alerts
 try:
@@ -77,9 +88,13 @@ try:
         severity_map = {"High": "🔴", "Medium": "🟡", "Low": "🟢"}
 
         for alert in alerts:
-            with st.expander(f"{severity_map[alert['severity']]} {alert['type']} ({alert['severity']})"):
+            with st.expander(
+                f"{severity_map[alert['severity']]} {alert['type']} ({alert['severity']})"
+            ):
                 st.markdown(f"**Message:** {alert['message']}")
-                st.markdown(f"**Time:** {alert['timestamp'].strftime('%Y-%m-%d %H:%M:%S')}")
+                st.markdown(
+                    f"**Time:** {alert['timestamp'].strftime('%Y-%m-%d %H:%M:%S')}"
+                )
 
     else:
         st.success("✅ All systems normal — no active alerts.")

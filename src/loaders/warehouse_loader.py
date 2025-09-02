@@ -15,6 +15,7 @@ from config.settings import DatabaseConfig
 
 logger = logging.getLogger(__name__)
 
+
 class WarehouseLoader:
     def __init__(self, db_config: DatabaseConfig):
         self.db_config = db_config
@@ -23,7 +24,7 @@ class WarehouseLoader:
             pool_size=10,
             max_overflow=20,
             pool_pre_ping=True,
-            echo=False
+            echo=False,
         )
         self.SessionLocal = sessionmaker(bind=self.engine)
 
@@ -50,7 +51,7 @@ class WarehouseLoader:
         if not data:
             logger.info("No data to insert")
             return 0
-            
+
         try:
             for record in data:
                 record["id"] = str(uuid.uuid4())
@@ -63,7 +64,7 @@ class WarehouseLoader:
                 if_exists="append",
                 index=False,
                 method="multi",
-                chunksize=self.db_config.batch_size or 100
+                chunksize=self.db_config.batch_size or 100,
             )
             logger.info(f"✅ Inserted {len(data)} crypto price records.")
             return len(data)
@@ -83,30 +84,34 @@ class WarehouseLoader:
         records_processed: int,
         error_message: Optional[str] = None,
         started_at: Optional[datetime] = None,
-        completed_at: Optional[datetime] = None
+        completed_at: Optional[datetime] = None,
     ):
         """Insert or update a pipeline run log"""
         run_data = {
-            'id': uuid.uuid4(),  # You may use uuid5 for idempotency
-            'run_id': run_id,
-            'stage': stage,
-            'status': status,
-            'records_processed': records_processed,
-            'error_message': error_message,
-            'started_at': started_at or datetime.utcnow(),
-            'completed_at': completed_at or datetime.utcnow()
+            "id": uuid.uuid4(),  # You may use uuid5 for idempotency
+            "run_id": run_id,
+            "stage": stage,
+            "status": status,
+            "records_processed": records_processed,
+            "error_message": error_message,
+            "started_at": started_at or datetime.utcnow(),
+            "completed_at": completed_at or datetime.utcnow(),
         }
 
         try:
             with self.get_session() as session:
-                stmt = insert(PipelineRun).values(**run_data).on_conflict_do_update(
-                    index_elements=['run_id', 'stage'],
-                    set_={
-                        'status': status,
-                        'records_processed': records_processed,
-                        'error_message': error_message,
-                        'completed_at': run_data['completed_at'],
-                    }
+                stmt = (
+                    insert(PipelineRun)
+                    .values(**run_data)
+                    .on_conflict_do_update(
+                        index_elements=["run_id", "stage"],
+                        set_={
+                            "status": status,
+                            "records_processed": records_processed,
+                            "error_message": error_message,
+                            "completed_at": run_data["completed_at"],
+                        },
+                    )
                 )
                 session.execute(stmt)
                 logger.info(f"📝 Logged pipeline run: {run_id} [{stage} - {status}]")

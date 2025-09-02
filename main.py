@@ -29,10 +29,10 @@ async def run_manual_extraction():
     """Run a single manual extraction"""
     logger = logging.getLogger(__name__)
     logger.info("Starting manual extraction...")
-    
+
     orchestrator = CryptoPipelineOrchestrator(PipelineConfig(), DatabaseConfig())
     result = await orchestrator.run_extraction_pipeline()
-    
+
     logger.info(f"Extraction completed with result: {result}")
     return result
 
@@ -41,14 +41,14 @@ def run_scheduled_pipeline():
     """Run the scheduled pipeline"""
     logger = logging.getLogger(__name__)
     logger.info("Starting scheduled pipeline...")
-    
+
     config = PipelineConfig()
     db_config = DatabaseConfig()
     orchestrator = CryptoPipelineOrchestrator(config, db_config)
-    
+
     scheduler = PipelineScheduler(orchestrator, config.extraction_interval_minutes)
     scheduler.schedule_pipeline()
-    
+
     try:
         scheduler.start()
     except KeyboardInterrupt:
@@ -59,11 +59,11 @@ def run_scheduled_pipeline():
 def main():
     """Main entry point"""
     logger = setup_logging()
-    
+
     # Check command line arguments
     if len(sys.argv) > 1:
         command = sys.argv[1]
-        
+
         if command == "manual":
             # Run manual extraction
             asyncio.run(run_manual_extraction())

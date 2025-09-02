@@ -10,6 +10,7 @@ from extractors.crypto_extractor import CryptoDataExtractor
 
 logger = logging.getLogger(__name__)
 
+
 class CryptoPipelineOrchestrator:
     def __init__(self, config: PipelineConfig, db_config: DatabaseConfig):
         self.config = config
@@ -22,7 +23,9 @@ class CryptoPipelineOrchestrator:
         start_time = datetime.utcnow()
 
         logger.info(f"Starting pipeline run: {run_id}")
-        logger.info(f"Extracting data for cryptocurrencies: {self.config.cryptocurrencies}")
+        logger.info(
+            f"Extracting data for cryptocurrencies: {self.config.cryptocurrencies}"
+        )
 
         try:
             # Log extract → running
@@ -31,14 +34,16 @@ class CryptoPipelineOrchestrator:
                 stage="extract",
                 status="running",
                 records_processed=0,
-                started_at=start_time
+                started_at=start_time,
             )
 
             # Extract data
             logger.info("Starting data extraction from CoinGecko API")
             async with CryptoDataExtractor(self.config) as extractor:
                 crypto_data = await extractor.fetch_crypto_prices()
-            logger.info(f"Successfully extracted {len(crypto_data)} records from CoinGecko API")
+            logger.info(
+                f"Successfully extracted {len(crypto_data)} records from CoinGecko API"
+            )
 
             # Log extract → success
             self.loader.log_pipeline_run(
@@ -47,7 +52,7 @@ class CryptoPipelineOrchestrator:
                 status="success",
                 records_processed=len(crypto_data),
                 started_at=start_time,
-                completed_at=datetime.utcnow()
+                completed_at=datetime.utcnow(),
             )
 
             # Log load → running
@@ -56,7 +61,7 @@ class CryptoPipelineOrchestrator:
                 stage="load",
                 status="running",
                 records_processed=0,
-                started_at=datetime.utcnow()
+                started_at=datetime.utcnow(),
             )
 
             # Load data
@@ -70,14 +75,14 @@ class CryptoPipelineOrchestrator:
                 stage="load",
                 status="success",
                 records_processed=records_loaded,
-                completed_at=datetime.utcnow()
+                completed_at=datetime.utcnow(),
             )
 
             result = {
                 "run_id": run_id,
                 "status": "success",
                 "records_processed": records_loaded,
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.utcnow().isoformat(),
             }
 
             logger.info(f"Pipeline run {run_id} completed successfully")
@@ -94,14 +99,14 @@ class CryptoPipelineOrchestrator:
                 status="failed",
                 records_processed=0,
                 error_message=error_msg,
-                completed_at=datetime.utcnow()
+                completed_at=datetime.utcnow(),
             )
 
             result = {
                 "run_id": run_id,
                 "status": "failed",
                 "error": error_msg,
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.utcnow().isoformat(),
             }
 
             return result

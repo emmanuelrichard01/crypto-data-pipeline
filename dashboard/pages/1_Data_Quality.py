@@ -10,11 +10,13 @@ st.set_page_config(page_title="Data Quality Dashboard", page_icon="🔍", layout
 # Title
 st.title("🔍 Data Quality Dashboard")
 
+
 # Database connection
 @st.cache_resource
 def get_database_connection():
     conn_str = f"postgresql://{os.getenv('DB_USER', 'postgres')}:{os.getenv('DB_PASSWORD', 'crypto_password_123')}@{os.getenv('DB_HOST', 'localhost')}:{os.getenv('DB_PORT', '5432')}/{os.getenv('DB_NAME', 'crypto_warehouse')}"
     return create_engine(conn_str)
+
 
 @st.cache_data(ttl=300)
 def load_data_quality_metrics():
@@ -37,6 +39,7 @@ def load_data_quality_metrics():
     """
     return pd.read_sql(query, engine)
 
+
 try:
     df = load_data_quality_metrics()
 
@@ -51,13 +54,27 @@ try:
         col3.metric("Total Records Analyzed", f"{total_records:,}")
 
         st.markdown("### 📈 Quality Trend Over Time")
-        daily_quality = df.groupby(df["extraction_hour"].dt.date)["data_quality_score"].mean().reset_index()
-        fig = px.line(daily_quality, x="extraction_hour", y="data_quality_score", title="Daily Data Quality Score")
+        daily_quality = (
+            df.groupby(df["extraction_hour"].dt.date)["data_quality_score"]
+            .mean()
+            .reset_index()
+        )
+        fig = px.line(
+            daily_quality,
+            x="extraction_hour",
+            y="data_quality_score",
+            title="Daily Data Quality Score",
+        )
         st.plotly_chart(fig, use_container_width=True)
 
         st.markdown("### 📊 Quality by Cryptocurrency")
         symbol_quality = df.groupby("symbol")["data_quality_score"].mean().reset_index()
-        fig2 = px.bar(symbol_quality, x="symbol", y="data_quality_score", title="Avg Quality per Symbol")
+        fig2 = px.bar(
+            symbol_quality,
+            x="symbol",
+            y="data_quality_score",
+            title="Avg Quality per Symbol",
+        )
         st.plotly_chart(fig2, use_container_width=True)
 
     else:

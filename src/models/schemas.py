@@ -1,6 +1,12 @@
 from sqlalchemy import (
-    Column, Integer, String, Float, DateTime, Text,
-    UniqueConstraint, Index
+    Column,
+    Integer,
+    String,
+    Float,
+    DateTime,
+    Text,
+    UniqueConstraint,
+    Index,
 )
 from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime
@@ -13,6 +19,7 @@ class CryptoPrice(Base):
     Stores raw crypto price data as fetched from the CoinGecko API.
     Includes enriched fields if API key is available.
     """
+
     __tablename__ = "crypto_prices_raw"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -38,8 +45,8 @@ class CryptoPrice(Base):
     last_updated = Column(String(50))
 
     __table_args__ = (
-        UniqueConstraint('symbol', 'extracted_at', name='uq_symbol_extracted_at'),
-        Index('ix_crypto_prices_symbol_extracted_at', 'symbol', 'extracted_at'),
+        UniqueConstraint("symbol", "extracted_at", name="uq_symbol_extracted_at"),
+        Index("ix_crypto_prices_symbol_extracted_at", "symbol", "extracted_at"),
     )
 
     def __repr__(self):
@@ -50,6 +57,7 @@ class PipelineRun(Base):
     """
     Tracks the status and metrics of pipeline stages (extract, load, transform).
     """
+
     __tablename__ = "pipeline_runs"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -62,8 +70,8 @@ class PipelineRun(Base):
     completed_at = Column(DateTime)
 
     __table_args__ = (
-        UniqueConstraint('run_id', 'stage', name='uq_run_id_stage'),
-        Index('ix_pipeline_runs_run_id_stage', 'run_id', 'stage'),
+        UniqueConstraint("run_id", "stage", name="uq_run_id_stage"),
+        Index("ix_pipeline_runs_run_id_stage", "run_id", "stage"),
     )
 
     def __repr__(self):
