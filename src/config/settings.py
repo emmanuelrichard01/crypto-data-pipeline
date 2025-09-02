@@ -1,28 +1,34 @@
-import json
 import logging
 import os
-from dataclasses import dataclass
-from typing import Dict, List, Optional
+from dataclasses import dataclass, field
+from typing import List, Optional
 
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
+# Load environment variables from .env file (if present)
 load_dotenv()
-
 logger = logging.getLogger(__name__)
 
 
 @dataclass
 class DatabaseConfig:
-    host: str = os.getenv("DB_HOST", "localhost")
-    port: int = int(os.getenv("DB_PORT", "5432"))
-    database: str = os.getenv("DB_NAME", "crypto_warehouse")
-    user: str = os.getenv("DB_USER", "postgres")
-    password: str = os.getenv("DB_PASSWORD", "crypto_password_123")
-    batch_size: int = int(os.getenv("BATCH_SIZE", "100"))
+    host: Optional[str] = None
+    port: Optional[int] = None
+    database: Optional[str] = None
+    user: Optional[str] = None
+    password: Optional[str] = None
+    batch_size: Optional[int] = None
 
     def __post_init__(self):
-        # Validate required fields
+        # Lazy load values from env only if not provided directly
+        self.host = self.host or os.getenv("DB_HOST", "localhost")
+        self.port = self.port or int(os.getenv("DB_PORT", "5432"))
+        self.database = self.database or os.getenv("DB_NAME", "crypto_warehouse")
+        self.user = self.user or os.getenv("DB_USER", "postgres")
+        self.password = self.password or os.getenv("DB_PASSWORD", "crypto_password_123")
+        self.batch_size = self.batch_size or int(os.getenv("BATCH_SIZE", "100"))
+
+        # Validation
         if not self.host:
             raise ValueError("DB_HOST is required")
         if not self.database:
@@ -38,25 +44,30 @@ class DatabaseConfig:
 
     @property
     def connection_string(self) -> str:
+        """Return a SQLAlchemy-compatible Postgres connection string."""
         return f"postgresql://{self.user}:{self.password}@{self.host}:{self.port}/{self.database}"
 
 
 @dataclass
 class PipelineConfig:
-    cryptocurrencies: List[str] = None
-    extraction_interval_minutes: int = int(
-        os.getenv("EXTRACTION_INTERVAL_MINUTES", "60")
+    extraction_interval_minutes: int = field(
+        default_factory=lambda: int(os.getenv("EXTRACTION_INTERVAL_MINUTES", "60"))
     )
-    batch_size: int = int(os.getenv("BATCH_SIZE", "100"))
-    max_retries: int = int(os.getenv("MAX_RETRIES", "3"))
-    timeout_seconds: int = int(os.getenv("TIMEOUT_SECONDS", "30"))
+    batch_size: int = field(default_factory=lambda: int(os.getenv("BATCH_SIZE", "100")))
+    max_retries: int = field(default_factory=lambda: int(os.getenv("MAX_RETRIES", "3")))
+    timeout_seconds: int = field(
+        default_factory=lambda: int(os.getenv("TIMEOUT_SECONDS", "30"))
+    )
+    cryptocurrencies: List[str] = field(default_factory=list)
 
     def __post_init__(self):
-        # Get cryptocurrencies from environment variable or use default
+        # Resolve cryptocurrencies from env or fallback
         crypto_env = os.getenv("CRYPTOCURRENCIES")
         if crypto_env:
-            self.cryptocurrencies = [crypto.strip() for crypto in crypto_env.split(",")]
-        elif self.cryptocurrencies is None:
+            self.cryptocurrencies = [
+                c.strip() for c in crypto_env.split(",") if c.strip()
+            ]
+        elif not self.cryptocurrencies:
             self.cryptocurrencies = [
                 "bitcoin",
                 "ethereum",
@@ -65,7 +76,7 @@ class PipelineConfig:
                 "chainlink",
             ]
 
-        # Validate configuration parameters
+        # Validation
         if self.extraction_interval_minutes <= 0:
             raise ValueError("EXTRACTION_INTERVAL_MINUTES must be positive")
         if self.batch_size <= 0:
