@@ -53,7 +53,13 @@ def test_pipeline_config_defaults():
     assert config.batch_size == 100
     assert config.max_retries == 3
     assert config.timeout_seconds == 30
-    assert config.cryptocurrencies == ["bitcoin", "ethereum", "cardano", "polkadot", "chainlink"]
+    assert config.cryptocurrencies == [
+        "bitcoin",
+        "ethereum",
+        "cardano",
+        "polkadot",
+        "chainlink",
+    ]
 
 
 def test_pipeline_config_from_env():
@@ -78,7 +84,9 @@ def test_pipeline_config_from_env():
 
 def test_pipeline_config_validation():
     with patch.dict(os.environ, {"EXTRACTION_INTERVAL_MINUTES": "0"}, clear=True):
-        with pytest.raises(ValueError, match="EXTRACTION_INTERVAL_MINUTES must be positive"):
+        with pytest.raises(
+            ValueError, match="EXTRACTION_INTERVAL_MINUTES must be positive"
+        ):
             PipelineConfig()
 
     with patch.dict(os.environ, {"CRYPTOCURRENCIES": ""}, clear=True):

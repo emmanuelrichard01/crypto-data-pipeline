@@ -46,7 +46,9 @@ def test_warehouse_loader_bulk_insert_crypto_prices_error():
     loader = WarehouseLoader(db_config)
     with patch("pandas.DataFrame.to_sql", side_effect=Exception("Database error")):
         with pytest.raises(Exception, match="Database error"):
-            loader.bulk_insert_crypto_prices([{"symbol": "BTC", "current_price": 50000.0}])
+            loader.bulk_insert_crypto_prices(
+                [{"symbol": "BTC", "current_price": 50000.0}]
+            )
 
 
 def test_warehouse_loader_log_pipeline_run():
@@ -57,6 +59,8 @@ def test_warehouse_loader_log_pipeline_run():
     loader.get_session.return_value.__enter__.return_value = mock_session
     with patch("sqlalchemy.dialects.postgresql.insert") as mock_insert:
         mock_stmt = Mock()
-        mock_insert.return_value.values.return_value.on_conflict_do_update.return_value = mock_stmt
+        mock_insert.return_value.values.return_value.on_conflict_do_update.return_value = (
+            mock_stmt
+        )
         loader.log_pipeline_run("test_run", "extract", "success", 100)
         mock_session.execute.assert_called_once()

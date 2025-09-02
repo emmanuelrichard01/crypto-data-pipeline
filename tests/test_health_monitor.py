@@ -31,7 +31,9 @@ def test_health_monitor_healthy(mock_loader):
 
 def test_health_monitor_unhealthy_stale_data(mock_loader):
     loader, session = mock_loader
-    session.execute.return_value.fetchall.return_value = [Mock(stage="extract", status="success", count=5)]
+    session.execute.return_value.fetchall.return_value = [
+        Mock(stage="extract", status="success", count=5)
+    ]
     latest_time = datetime.utcnow() - timedelta(hours=3)
     session.execute.return_value.fetchone.side_effect = [
         Mock(latest_extraction=latest_time, total_records=0),
