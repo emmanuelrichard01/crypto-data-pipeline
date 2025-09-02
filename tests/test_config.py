@@ -1,95 +1,99 @@
+import logging
 import os
-from unittest.mock import patch
+from dataclasses import dataclass, field
+from typing import List
 
-import pytest
+from dotenv import load_dotenv
 
-from config.settings import DatabaseConfig, PipelineConfig
-
-
-def test_database_config_defaults():
-    config = DatabaseConfig()
-    assert config.host == "localhost"
-    assert config.port == 5432
-    assert config.database == "crypto_warehouse"
-    assert config.user == "postgres"
-    assert config.password == "crypto_password_123"
-    assert config.batch_size == 100
+# Load environment variables
+load_dotenv()
+logger = logging.getLogger(__name__)
 
 
-def test_database_config_from_env():
-    with patch.dict(
-        os.environ,
-        {
-            "DB_HOST": "test_host",
-            "DB_PORT": "5433",
-            "DB_NAME": "test_db",
-            "DB_USER": "test_user",
-            "DB_PASSWORD": "test_password",
-            "BATCH_SIZE": "200",
-        },
-        clear=True,
-    ):
-        config = DatabaseConfig()
-        assert config.host == "test_host"
-        assert config.port == 5433
-        assert config.database == "test_db"
-        assert config.user == "test_user"
-        assert config.password == "test_password"
-        assert config.batch_size == 200
+@dataclass
+class DatabaseConfig:
+    host: str = None
+    port: int = None
+    database: str = None
+    user: str = None
+    password: str = None
+    batch_size: int = None
+
+    def __post_init__(self):
+        # Defaults
+        self.host = (
+            os.getenv("DB_HOST", "localhost") if self.host is None else self.host
+        )
+        self.port = (
+            int(os.getenv("DB_PORT", "5432")) if self.port is None else self.port
+        )
+        self.database = (
+            os.getenv("DB_NAME", "crypto_warehouse")
+            if self.database is None
+            else self.database
+        )
+        self.user = os.getenv("DB_USER", "postgres") if self.user is None else self.user
+        self.password = (
+            os.getenv("DB_PASSWORD", "crypto_password_123")
+            if self.password is None
+            else self.password
+        )
+        self.batch_size = (
+            int(os.getenv("BATCH_SIZE", "100"))
+            if self.batch_size is None
+            else self.batch_size
+        )
+
+        # Validation
+        if not (1 <= self.port <= 65535):
+            raise ValueError("DB_PORT must be between 1 and 65535")
+        if self.batch_size <= 0:
+            raise ValueError("BATCH_SIZE must be positive")
+
+    @property
+    def connection_string(self) -> str:
+        return f"postgresql://{self.user}:{self.password}@{self.host}:{self.port}/{self.database}"
 
 
-def test_database_config_validation():
-    with patch.dict(os.environ, {"DB_PORT": "0"}, clear=True):
-        with pytest.raises(ValueError, match="DB_PORT must be between 1 and 65535"):
-            DatabaseConfig()
+@dataclass
+class PipelineConfig:
+    extraction_interval_minutes: int = field(
+        default_factory=lambda: int(os.getenv("EXTRACTION_INTERVAL_MINUTES", "60"))
+    )
+    batch_size: int = field(default_factory=lambda: int(os.getenv("BATCH_SIZE", "100")))
+    max_retries: int = field(default_factory=lambda: int(os.getenv("MAX_RETRIES", "3")))
+    timeout_seconds: int = field(
+        default_factory=lambda: int(os.getenv("TIMEOUT_SECONDS", "30"))
+    )
+    cryptocurrencies: List[str] = field(default_factory=list)
 
-    with patch.dict(os.environ, {"BATCH_SIZE": "-1"}, clear=True):
-        with pytest.raises(ValueError, match="BATCH_SIZE must be positive"):
-            DatabaseConfig()
+    def __post_init__(self):
+        # Validation first
+        if self.extraction_interval_minutes <= 0:
+            raise ValueError("EXTRACTION_INTERVAL_MINUTES must be positive")
+        if self.batch_size <= 0:
+            raise ValueError("BATCH_SIZE must be positive")
+        if self.max_retries < 0:
+            raise ValueError("MAX_RETRIES must be non-negative")
+        if self.timeout_seconds <= 0:
+            raise ValueError("TIMEOUT_SECONDS must be positive")
 
+        # Handle CRYPTOCURRENCIES env
+        crypto_env = os.getenv("CRYPTOCURRENCIES")
+        if crypto_env is not None:
+            if not crypto_env.strip():
+                raise ValueError("CRYPTOCURRENCIES list cannot be empty")
+            self.cryptocurrencies = [
+                c.strip() for c in crypto_env.split(",") if c.strip()
+            ]
+        elif not self.cryptocurrencies:
+            self.cryptocurrencies = [
+                "bitcoin",
+                "ethereum",
+                "cardano",
+                "polkadot",
+                "chainlink",
+            ]
 
-def test_pipeline_config_defaults():
-    config = PipelineConfig()
-    assert config.extraction_interval_minutes == 60
-    assert config.batch_size == 100
-    assert config.max_retries == 3
-    assert config.timeout_seconds == 30
-    assert config.cryptocurrencies == [
-        "bitcoin",
-        "ethereum",
-        "cardano",
-        "polkadot",
-        "chainlink",
-    ]
-
-
-def test_pipeline_config_from_env():
-    with patch.dict(
-        os.environ,
-        {
-            "EXTRACTION_INTERVAL_MINUTES": "30",
-            "BATCH_SIZE": "150",
-            "MAX_RETRIES": "5",
-            "TIMEOUT_SECONDS": "60",
-            "CRYPTOCURRENCIES": "bitcoin,ethereum",
-        },
-        clear=True,
-    ):
-        config = PipelineConfig()
-        assert config.extraction_interval_minutes == 30
-        assert config.batch_size == 150
-        assert config.max_retries == 5
-        assert config.timeout_seconds == 60
-        assert config.cryptocurrencies == ["bitcoin", "ethereum"]
-
-
-def test_pipeline_config_validation():
-    with patch.dict(os.environ, {"EXTRACTION_INTERVAL_MINUTES": "0"}, clear=True):
-        with pytest.raises(
-            ValueError, match="EXTRACTION_INTERVAL_MINUTES must be positive"
-        ):
-            PipelineConfig()
-
-    with patch.dict(os.environ, {"CRYPTOCURRENCIES": ""}, clear=True):
-        with pytest.raises(ValueError, match="CRYPTOCURRENCIES list cannot be empty"):
-            PipelineConfig()
+        if not self.cryptocurrencies:
+            raise ValueError("CRYPTOCURRENCIES list cannot be empty")

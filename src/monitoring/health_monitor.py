@@ -1,10 +1,9 @@
 import logging
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 
 from sqlalchemy import text
 
-from config.settings import DatabaseConfig
 from loaders.warehouse_loader import WarehouseLoader
 
 logger = logging.getLogger(__name__)
@@ -15,73 +14,58 @@ class PipelineHealthMonitor:
         self.loader = loader
 
     def check_pipeline_health(self) -> Dict[str, Any]:
-        """Check overall pipeline health"""
+        """Check overall pipeline health with clear error/warning separation."""
         try:
             with self.loader.get_session() as session:
-                # Check recent pipeline runs
-                try:
-                    recent_runs = session.execute(
-                        text(
-                            """
+                # Recent pipeline runs
+                recent_runs = session.execute(
+                    text(
+                        """
                         SELECT stage, status, COUNT(*) as count
                         FROM pipeline_runs
                         WHERE started_at >= :since
                         GROUP BY stage, status
-                    """
-                        ),
-                        {"since": datetime.utcnow() - timedelta(hours=24)},
-                    ).fetchall()
-                except Exception as e:
-                    logger.warning(f"Failed to fetch pipeline runs: {e}")
-                    recent_runs = []
+                        """
+                    ),
+                    {"since": datetime.utcnow() - timedelta(hours=24)},
+                ).fetchall()
 
-                # Check data freshness
-                try:
-                    latest_data = session.execute(
-                        text(
-                            """
+                # Data freshness
+                latest_data = session.execute(
+                    text(
+                        """
                         SELECT MAX(extracted_at) as latest_extraction,
                                COUNT(*) as total_records
                         FROM crypto_prices_raw
                         WHERE extracted_at >= :since
-                    """
-                        ),
-                        {"since": datetime.utcnow() - timedelta(hours=24)},
-                    ).fetchone()
-                except Exception as e:
-                    logger.warning(f"Failed to fetch data freshness: {e}")
-                    latest_data = None
+                        """
+                    ),
+                    {"since": datetime.utcnow() - timedelta(hours=24)},
+                ).fetchone()
 
-                # Check data quality
-                try:
-                    data_quality = session.execute(
-                        text(
-                            """
+                # Data quality
+                data_quality = session.execute(
+                    text(
+                        """
                         SELECT
                             COUNT(*) as total_records,
                             COUNT(*) FILTER (WHERE current_price > 0) as valid_prices,
                             AVG(current_price) as avg_price
                         FROM crypto_prices_raw
                         WHERE extracted_at >= :since
-                    """
-                        ),
-                        {"since": datetime.utcnow() - timedelta(hours=1)},
-                    ).fetchone()
-                except Exception as e:
-                    logger.warning(f"Failed to fetch data quality: {e}")
-                    data_quality = None
+                        """
+                    ),
+                    {"since": datetime.utcnow() - timedelta(hours=1)},
+                ).fetchone()
 
+                # Base health status
                 health_status = {
                     "timestamp": datetime.utcnow().isoformat(),
                     "status": "healthy",
-                    "pipeline_runs": (
-                        [
-                            {"stage": r.stage, "status": r.status, "count": r.count}
-                            for r in recent_runs
-                        ]
-                        if recent_runs
-                        else []
-                    ),
+                    "pipeline_runs": [
+                        {"stage": r.stage, "status": r.status, "count": r.count}
+                        for r in recent_runs
+                    ],
                     "data_freshness": {
                         "latest_extraction": (
                             latest_data.latest_extraction.isoformat()
@@ -107,7 +91,7 @@ class PipelineHealthMonitor:
                     },
                 }
 
-                # Determine health status
+                # Health rules
                 if (
                     latest_data
                     and latest_data.latest_extraction
@@ -123,6 +107,7 @@ class PipelineHealthMonitor:
                 return health_status
 
         except Exception as e:
+            # Any DB-level or query failure is a hard error
             logger.error(f"Health check failed: {e}", exc_info=True)
             return {
                 "timestamp": datetime.utcnow().isoformat(),
