@@ -197,11 +197,11 @@ Edit `src/config/settings.py` to add or remove cryptocurrencies:
 @dataclass
 class PipelineConfig:
     cryptocurrencies: List[str] = None
-    
+
     def __post_init__(self):
         if self.cryptocurrencies is None:
             self.cryptocurrencies = [
-                "bitcoin", "ethereum", "cardano", 
+                "bitcoin", "ethereum", "cardano",
                 "polkadot", "chainlink", "solana",
                 "avalanche-2", "polygon"
             ]

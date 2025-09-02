@@ -1,7 +1,8 @@
 import os
+
 import pandas as pd
-import streamlit as st
 import plotly.express as px
+import streamlit as st
 from sqlalchemy import create_engine
 
 # Page config
@@ -22,12 +23,12 @@ def get_database_connection():
 def load_data_quality_metrics():
     engine = get_database_connection()
     query = """
-    SELECT 
+    SELECT
         symbol,
         extraction_hour,
         data_quality_score,
         total_records,
-        CASE 
+        CASE
             WHEN data_quality_score >= 95 THEN 'Excellent'
             WHEN data_quality_score >= 80 THEN 'Good'
             WHEN data_quality_score >= 60 THEN 'Fair'

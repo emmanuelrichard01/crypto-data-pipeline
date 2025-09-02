@@ -1,9 +1,10 @@
 import asyncio
-import aiohttp
-import os
 import logging
-from typing import List, Dict, Optional, Any
+import os
 from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+import aiohttp
 import backoff
 
 from config.settings import PipelineConfig

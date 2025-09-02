@@ -1,9 +1,10 @@
+import json
+import logging
 import os
 from dataclasses import dataclass
-from typing import List, Dict, Optional
-import json
+from typing import Dict, List, Optional
+
 from dotenv import load_dotenv
-import logging
 
 # Load environment variables from .env file
 load_dotenv()

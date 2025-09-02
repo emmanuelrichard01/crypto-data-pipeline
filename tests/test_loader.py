@@ -1,8 +1,10 @@
-import pytest
+from unittest.mock import MagicMock, Mock, patch
+
 import pandas as pd
-from unittest.mock import Mock, patch, MagicMock
-from loaders.warehouse_loader import WarehouseLoader
+import pytest
+
 from config.settings import DatabaseConfig
+from loaders.warehouse_loader import WarehouseLoader
 
 
 @pytest.fixture

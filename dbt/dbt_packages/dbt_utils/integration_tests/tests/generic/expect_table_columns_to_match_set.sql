@@ -7,7 +7,7 @@
 #}
 
 {%- test expect_table_columns_to_match_set(model, column_list, transform="upper") -%}
-{%- if execute -%}
+    {%- if execute -%}
     {%- set column_list = column_list | map(transform) | list -%}
 
     {# Replaces dbt_expectations._get_column_list() #}
@@ -52,3 +52,4 @@
 
 {%- endif -%}
 {%- endtest -%}
+

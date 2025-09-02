@@ -1,12 +1,12 @@
 {% macro width_bucket(expr, min_value, max_value, num_buckets) %}
-  {{ return(adapter.dispatch('width_bucket', 'dbt_utils') (expr, min_value, max_value, num_buckets)) }}
+    {{ return(adapter.dispatch('width_bucket', 'dbt_utils') (expr, min_value, max_value, num_buckets)) }}
 {% endmacro %}
 
 
 {% macro default__width_bucket(expr, min_value, max_value, num_buckets) -%}
 
     {% set bin_size -%}
-    (( {{ max_value }} - {{ min_value }} ) / {{ num_buckets }} )
+        (( {{ max_value }} - {{ min_value }} ) / {{ num_buckets }} )
     {%- endset %}
     (
         -- to break ties when the amount is eaxtly at the bucket egde

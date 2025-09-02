@@ -5,5 +5,6 @@ with data as (
 )
 
 select
-   col_a, field
+    col_a,
+    field
 from data

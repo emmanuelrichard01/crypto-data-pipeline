@@ -4,6 +4,5 @@ with data as (
 
 )
 
-select
-    field
+select field
 from data

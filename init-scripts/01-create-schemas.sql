@@ -5,12 +5,12 @@ CREATE SCHEMA IF NOT EXISTS intermediate;
 
 -- Create raw data source configuration for dbt
 CREATE OR REPLACE VIEW information_schema.dbt_sources AS
-SELECT 
-    'raw' as source_name,
-    'crypto_prices_raw' as table_name,
-    'public' as schema_name
+SELECT
+    'raw' AS source_name,
+    'crypto_prices_raw' AS table_name,
+    'public' AS schema_name
 UNION ALL
-SELECT 
-    'raw' as source_name,
-    'pipeline_runs' as table_name,
-    'public' as schema_name;
+SELECT
+    'raw' AS source_name,
+    'pipeline_runs' AS table_name,
+    'public' AS schema_name;

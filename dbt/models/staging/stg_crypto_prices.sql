@@ -4,31 +4,31 @@
 ) }}
 
 WITH source_data AS (
-    SELECT 
-        id as price_id,
-        UPPER(TRIM(symbol)) as symbol,
-        TRIM(name) as crypto_name,
-        current_price as price_usd,
+    SELECT
+        id AS price_id,
+        current_price AS price_usd,
         market_cap,
-        total_volume as volume_24h,
+        total_volume AS volume_24h,
         price_change_24h,
-        price_change_percentage_24h as price_change_pct_24h,
+        price_change_percentage_24h AS price_change_pct_24h,
         market_cap_rank,
         extracted_at,
         created_at,
-        
-        CASE WHEN current_price <= 0 THEN TRUE ELSE FALSE END as is_invalid_price,
-        CASE WHEN market_cap <= 0 THEN TRUE ELSE FALSE END as is_invalid_market_cap,
-        CASE WHEN total_volume < 0 THEN TRUE ELSE FALSE END as is_invalid_volume
+        UPPER(TRIM(symbol)) AS symbol,
+        TRIM(name) AS crypto_name,
+
+        COALESCE(current_price <= 0, FALSE) AS is_invalid_price,
+        COALESCE(market_cap <= 0, FALSE) AS is_invalid_market_cap,
+        COALESCE(total_volume < 0, FALSE) AS is_invalid_volume
     FROM {{ source('raw', 'crypto_prices_raw') }}
 ),
 
 cleaned_data AS (
-    SELECT 
+    SELECT
         *,
-        DATE(extracted_at) as extraction_date,
-        DATE_TRUNC('hour', extracted_at) as extraction_hour,
-        CASE 
+        DATE(extracted_at) AS extraction_date,
+        DATE_TRUNC('hour', extracted_at) AS extraction_hour,
+        CASE
             WHEN LAG(price_usd) OVER (
                 PARTITION BY symbol ORDER BY extracted_at
             ) IS NOT NULL THEN
@@ -37,7 +37,7 @@ cleaned_data AS (
                 )) / LAG(price_usd) OVER (
                     PARTITION BY symbol ORDER BY extracted_at
                 )) * 100
-        END as price_change_pct_from_previous
+        END AS price_change_pct_from_previous
     FROM source_data
     WHERE NOT is_invalid_price AND NOT is_invalid_volume
 )

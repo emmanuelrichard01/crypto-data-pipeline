@@ -1,21 +1,19 @@
+create view "crypto_warehouse"."public_staging"."stg_pipeline_runs__dbt_tmp"
 
-  create view "crypto_warehouse"."public_staging"."stg_pipeline_runs__dbt_tmp"
-    
-    
-  as (
-    SELECT 
-    id as run_id,
-    run_id as run_identifier,
-    stage,
-    status,
-    records_processed,
-    error_message,
-    started_at,
-    completed_at,
-    CASE 
-        WHEN completed_at IS NOT NULL 
-        THEN EXTRACT(EPOCH FROM (completed_at - started_at)) 
-        ELSE NULL 
-    END as duration_seconds
-FROM "crypto_warehouse"."public"."pipeline_runs"
-  );
+
+as (
+    select
+        id as run_id,
+        run_id as run_identifier,
+        stage,
+        status,
+        records_processed,
+        error_message,
+        started_at,
+        completed_at,
+        case
+            when completed_at is not NULL
+                then EXTRACT(epoch from (completed_at - started_at))
+        end as duration_seconds
+    from "crypto_warehouse"."public"."pipeline_runs"
+);

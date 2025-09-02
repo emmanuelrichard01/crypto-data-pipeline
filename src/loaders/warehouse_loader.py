@@ -1,17 +1,18 @@
-import uuid
 import logging
-import pandas as pd
-from datetime import datetime
-from typing import List, Dict, Optional, Any
+import uuid
 from contextlib import contextmanager
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.dialects.postgresql import insert
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
+import pandas as pd
+from sqlalchemy import create_engine
+from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import sessionmaker
+
+from config.settings import DatabaseConfig
 from models.base import Base
 from models.schemas import PipelineRun
-from config.settings import DatabaseConfig
 
 logger = logging.getLogger(__name__)
 

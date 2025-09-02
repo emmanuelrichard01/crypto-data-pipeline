@@ -1,8 +1,10 @@
-import pytest
 import asyncio
 from unittest.mock import AsyncMock, Mock, patch
+
+import pytest
+
+from config.settings import DatabaseConfig, PipelineConfig
 from pipeline.orchestrator import CryptoPipelineOrchestrator
-from config.settings import PipelineConfig, DatabaseConfig
 
 
 @pytest.mark.asyncio

@@ -11,8 +11,8 @@ from pathlib import Path
 # Add src to Python path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
+from src.config.settings import DatabaseConfig, PipelineConfig
 from src.pipeline.orchestrator import CryptoPipelineOrchestrator
-from src.config.settings import PipelineConfig, DatabaseConfig
 from src.scheduler.job_scheduler import PipelineScheduler
 
 

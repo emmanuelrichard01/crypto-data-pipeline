@@ -4,10 +4,10 @@ WITH base_data AS (
     SELECT
         symbol,
         crypto_name,
-        DATE_TRUNC('hour', extracted_at) AS extraction_hour,
         price_usd,
         volume_24h,
         market_cap,
+        DATE_TRUNC('hour', extracted_at) AS extraction_hour,
         CASE WHEN price_usd <= 0 THEN 1 ELSE 0 END AS is_invalid
     FROM {{ ref('stg_crypto_prices') }}
 )

@@ -3,9 +3,9 @@
 Code formatting script to fix Black formatting issues.
 This script installs dependencies and formats all Python files.
 """
+import os
 import subprocess
 import sys
-import os
 from pathlib import Path
 
 

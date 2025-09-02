@@ -1,16 +1,18 @@
+import uuid
+from datetime import datetime
+
 from sqlalchemy import (
     Column,
+    DateTime,
+    Float,
+    Index,
     Integer,
     String,
-    Float,
-    DateTime,
     Text,
     UniqueConstraint,
-    Index,
 )
 from sqlalchemy.dialects.postgresql import UUID
-from datetime import datetime
-import uuid
+
 from models.base import Base
 
 

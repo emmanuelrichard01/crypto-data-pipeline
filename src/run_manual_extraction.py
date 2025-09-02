@@ -1,7 +1,8 @@
 import asyncio
 import sys
+
+from config.settings import DatabaseConfig, PipelineConfig
 from pipeline.orchestrator import CryptoPipelineOrchestrator
-from config.settings import PipelineConfig, DatabaseConfig
 
 
 async def main():

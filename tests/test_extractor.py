@@ -1,8 +1,10 @@
-import pytest
 import asyncio
 from unittest.mock import AsyncMock, patch
-from extractors.crypto_extractor import CryptoDataExtractor
+
+import pytest
+
 from config.settings import PipelineConfig
+from extractors.crypto_extractor import CryptoDataExtractor
 
 
 @pytest.mark.asyncio
