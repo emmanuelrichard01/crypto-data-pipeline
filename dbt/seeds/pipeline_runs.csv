@@ -1,0 +1,4 @@
+run_id,stage,status
+1,extract,success
+2,load,success
+3,transform,success

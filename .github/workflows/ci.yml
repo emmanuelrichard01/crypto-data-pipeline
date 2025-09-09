@@ -162,6 +162,10 @@ jobs:
         run: dbt debug
         working-directory: dbt
 
+      - name: Run dbt seed
+        run: dbt seed
+        working-directory: dbt
+
       - name: Run dbt run
         run: dbt run
         working-directory: dbt

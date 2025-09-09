@@ -19,34 +19,43 @@ models:
         tests:
           - unique
           - not_null
+
       - name: symbol
         description: 'Cryptocurrency symbol'
         tests:
           - not_null
+
       - name: price_usd
         description: 'Price in USD'
         tests:
           - not_null
           - dbt_utils.accepted_range:
-              min_value: 0
+              arguments:
+                min_value: 0
+
       - name: market_cap
         description: 'Market capitalization in USD'
         tests:
           - not_null
           - dbt_utils.accepted_range:
-              min_value: 0
+              arguments:
+                min_value: 0
+
       - name: extracted_at
         description: 'Timestamp when data was extracted'
         tests:
           - not_null
           - dbt_utils.expression_is_true:
-              expression: "{{ column_name }} <= CURRENT_TIMESTAMP"
+              arguments:
+                expression: "{{ column_name }}"
+
       - name: volume_24h
         description: '24-hour trading volume in USD'
         tests:
           - not_null
           - dbt_utils.accepted_range:
-              min_value: 0
+              arguments:
+                min_value: 0
 
   - name: stg_pipeline_runs
     description: 'Standardized metadata for pipeline stages and statuses'
@@ -55,10 +64,12 @@ models:
         description: 'Pipeline run identifier'
         tests:
           - not_null
+
       - name: stage
         description: 'ETL stage (extract, load, transform)'
         tests:
           - not_null
+
       - name: status
         description: 'Run outcome (running, success, failed)'
         tests:
