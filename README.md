@@ -5,7 +5,21 @@
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Status](https://img.shields.io/badge/status-production--ready-success)](#)
 
-A production-ready, modular cryptocurrency data pipeline that extracts, transforms, and visualizes real-time market data from CoinGecko API. Built with Python, PostgreSQL, dbt, Streamlit, and Grafana.
+A production-ready, end-to-end data pipeline for cryptocurrency market analytics.
+
+This project takes real-time price data from the CoinGecko API and turns it into clean, trustworthy insights with:
+
+- Automated extraction & loading into PostgreSQL
+
+- Transformations and testing with dbt
+
+- Interactive dashboards in Streamlit
+
+- Advanced monitoring & alerting powered by Grafana
+
+All services are fully containerized with Docker, orchestrated with Make, and wired into CI/CD for production reliability.
+
+Whether you’re exploring crypto market trends, learning modern data engineering, or evaluating production-grade pipeline design, this repo is built to be both a reference and a ready-to-run system.
 
 ![Dashboard Preview](docs/dashboard-preview.png)
 
@@ -377,13 +391,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [dbt Documentation](https://docs.getdbt.com/)
 - [Streamlit Documentation](https://docs.streamlit.io/)
 - [Grafana Documentation](https://grafana.com/docs/)
-
-## 🎉 Getting Started
-
-Your crypto data pipeline is now fully operational and production-ready!
-
-1. Visit the dashboard at `http://localhost:8501`
-2. Access Grafana monitoring at `http://localhost:3000`
-3. Check the database at `localhost:5432`
-
-For help, run `make help` to see all available commands.
