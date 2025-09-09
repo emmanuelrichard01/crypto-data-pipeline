@@ -20,7 +20,7 @@ WITH source_data AS (
         COALESCE(current_price <= 0, FALSE) AS is_invalid_price,
         COALESCE(market_cap <= 0, FALSE) AS is_invalid_market_cap,
         COALESCE(total_volume < 0, FALSE) AS is_invalid_volume
-    FROM {{ source('raw', 'crypto_prices_raw') }}
+    FROM {{ ref('crypto_prices_raw') }}
 ),
 
 cleaned_data AS (

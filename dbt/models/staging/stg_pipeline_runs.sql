@@ -11,4 +11,4 @@ SELECT
         WHEN completed_at IS NOT NULL
             THEN EXTRACT(EPOCH FROM (completed_at - started_at))
     END AS duration_seconds
-FROM {{ source('raw', 'pipeline_runs') }}
+FROM {{ ref('pipeline_runs') }}
