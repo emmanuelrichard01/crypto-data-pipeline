@@ -38,5 +38,17 @@ seeds:
   crypto_analytics:
     crypto_prices_raw:
       +schema: public
+      +column_types:
+        price_id: bigint
+        symbol: text
+        price_usd: numeric
+        market_cap: numeric
+        volume_24h: numeric
+        extracted_at: timestamp
     pipeline_runs:
       +schema: public
+      +column_types:
+        run_id: text
+        stage: text
+        status: text
+
