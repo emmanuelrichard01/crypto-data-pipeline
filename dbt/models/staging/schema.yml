@@ -55,7 +55,7 @@ models:
           - not_null
           - dbt_utils.expression_is_true:
               arguments:
-                expression: "{{ column_name }}"
+                expression: "{{ column_name }} <= CURRENT_TIMESTAMP"
 
   - name: stg_pipeline_runs
     description: 'Standardized metadata for pipeline stages and statuses'
