@@ -1,6 +1,5 @@
 # 🚀 Crypto Data Pipeline
 
-[![CI](https://github.com/emmanuelrichard01/crypto-data-pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/emmanuelrichard01/crypto-data-pipeline/actions/workflows/ci.yml)
 [![Dockerized](https://img.shields.io/badge/docker-ready-blue)](https://www.docker.com/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Status](https://img.shields.io/badge/status-production--ready-success)](#)
