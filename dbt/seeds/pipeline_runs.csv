@@ -1,4 +1,0 @@
-id,run_id,stage,status,records_processed,error_message,started_at,completed_at
-1,run_001,extract,success,1000,,2025-01-01 00:00:00,2025-01-01 00:01:00
-2,run_002,load,success,950,,2025-01-01 00:02:00,2025-01-01 00:03:00
-3,run_003,transform,failed,800,"Null value found in column 'price_usd'",2025-01-01 00:04:00,2025-01-01 00:04:30
