@@ -3,10 +3,10 @@ import uuid
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from config.settings import DatabaseConfig, PipelineConfig
-from extractors.crypto_extractor import CryptoDataExtractor
-from loaders.warehouse_loader import WarehouseLoader
-from models.schemas import PipelineRun
+from src.config.settings import DatabaseConfig, PipelineConfig
+from src.extractors.crypto_extractor import CryptoDataExtractor
+from src.loaders.warehouse_loader import WarehouseLoader
+from src.models.schemas import PipelineRun
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +15,10 @@ class CryptoPipelineOrchestrator:
     def __init__(self, config: PipelineConfig, db_config: DatabaseConfig):
         self.config = config
         self.db_config = db_config
+        logger.info("Initializing WarehouseLoader...")
         self.loader = WarehouseLoader(db_config)
+        logger.info(f"Pipeline configured with intervals: {config.extraction_interval_minutes} minutes")
+        logger.info(f"Monitoring cryptocurrencies: {', '.join(config.cryptocurrencies)}")
 
     async def run_extraction_pipeline(self) -> Dict[str, Any]:
         """Run the complete extraction and loading pipeline"""

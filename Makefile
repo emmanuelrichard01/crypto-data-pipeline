@@ -5,74 +5,59 @@ help: ## Show this help message
 	@echo ""
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-20s %s\n", $$1, $$2}'
 
-build: ## Build all Docker images
-	docker-compose build
+# Use docker-compose with .env file
+DC = docker-compose --env-file .env
 
 up: ## Start all services
-	docker-compose up -d
+	$(DC) up -d
 	@echo "Services starting..."
 	@echo "Dashboard will be available at: http://localhost:8501"
-	@echo "Grafana will be available at: http://localhost:3000 (admin/admin123)"
+	@echo "Grafana will be available at: http://localhost:4001 (admin/admin123)"
 
-down: ## Stop all services
-	docker-compose down
+down:
+	$(DC) down
 
-logs: ## View logs from all services
-	docker-compose logs -f
+build:
+	$(DC) build
 
-logs-pipeline: ## View pipeline logs only
-	docker-compose logs -f crypto-pipeline
+logs:
+	$(DC) logs -f
 
-logs-dashboard: ## View dashboard logs only
-	docker-compose logs -f dashboard
+logs-pipeline:
+	$(DC) logs -f crypto-pipeline
 
-clean: ## Clean up containers and volumes
-	docker-compose down -v
+logs-dashboard:
+	$(DC) logs -f dashboard
+
+dbt-deps: ## Install dbt dependencies
+	$(DC) run --rm dbt-service dbt deps --project-dir /app/dbt
+
+dbt-seed: dbt-deps ## Load seed data into the database
+	@echo "Loading seed data..."
+	$(DC) run --rm dbt-service dbt seed --project-dir /app/dbt --full-refresh
+
+dbt-run: ## Run dbt
+	$(DC) run --rm dbt-service dbt run --project-dir /app/dbt
+
+dbt-test: dbt-deps ## Run dbt tests
+	$(DC) run --rm dbt-service dbt test --project-dir /app/dbt
+
+pipeline-health:
+	$(DC) run --rm crypto-pipeline python src/health_monitor.py
+
+run-manual-extraction: ## Run a manual data extraction
+	$(DC) run --rm crypto-pipeline python -u main.py manual
+
+extract-test: ## Test the extraction pipeline
+	$(DC) run --rm \
+		-e PYTHONUNBUFFERED=1 \
+		-e LOG_LEVEL=DEBUG \
+		crypto-pipeline python -u main.py manual
+
+clean:
+	$(DC) down -v --remove-orphans
 	docker system prune -f
 
-up-dbt: ## Run dbt transformations
-	docker-compose up -d dbt-service
-
-dbt-run: ## Run dbt transformations
-	docker-compose run --rm dbt-service dbt run --project-dir /app/dbt
-
-dbt-deps:
-	docker-compose run --rm dbt-service dbt deps --project-dir /app/dbt
-
-dbt-test: ## Run dbt tests
-	docker-compose run --rm dbt-service dbt test --project-dir /app/dbt
-
-dbt-docs: ## Generate and serve dbt documentation
-	docker-compose run --rm dbt-service dbt docs generate --project-dir /app/dbt
-	docker-compose run --rm dbt-service dbt docs serve --project-dir /app/dbt --port 8080
-
-pipeline-health: ## Check pipeline health
-	docker-compose exec crypto-pipeline python -c 'import sys; \
-sys.path.append("/app/src"); \
-from monitoring.health_monitor import PipelineHealthMonitor; \
-from loaders.warehouse_loader import WarehouseLoader; \
-from config.settings import DatabaseConfig; \
-loader = WarehouseLoader(DatabaseConfig()); \
-monitor = PipelineHealthMonitor(loader); \
-health = monitor.check_pipeline_health(); \
-print("Pipeline Health:", health["status"])'
-
-
-run-manual-extraction: ## Run manual data extraction
-	docker-compose exec crypto-pipeline python src/run_manual_extraction.py
-
-
-setup-dev: ## Setup development environment
-	python -m venv venv
-	source venv/bin/activate && pip install -r requirements.txt -r requirements-dashboard.txt
-	@echo "Development environment setup complete"
-	@echo "Activate with: source venv/bin/activate"
-
-setup-dev-windows: ## Setup development environment (Windows)
-	python -m venv venv
-	venv\Scripts\pip install -r requirements.txt -r requirements-dashboard.txt
-	@echo "Development environment setup complete"
-	@echo "Activate with: venv\Scripts\activate"
 
 test: ## Run tests
 	docker-compose exec crypto-pipeline python -m pytest tests/ -v
@@ -115,6 +100,24 @@ dbt-lint: ## Run dbt linting
 dbt-clean: ## Clean dbt target directory
 	docker-compose run --rm dbt-service rm -rf /app/dbt/target
 
-dashboard: ## Open dashboard in browser (macOS/Linux)
+secure-check: ## Check security configuration
+	@echo "Checking security configuration..."
+	@if [ -f .env ]; then \
+		if grep -q "crypto_password_123\|your_password_here\|change_me" .env; then \
+			echo "⚠️  Warning: Default or example passwords found in .env"; \
+			exit 1; \
+		fi; \
+		if [ ! -s .env ]; then \
+			echo "⚠️  Warning: .env file is empty"; \
+			exit 1; \
+		fi; \
+		echo "✅ .env file check passed"; \
+	else \
+		echo "⚠️  Warning: .env file not found"; \
+		exit 1; \
+	fi
+	@echo "✅ Security check complete"
+
+dashboard: secure-check ## Open dashboard in browser (macOS/Linux)
 	@echo "Opening dashboard at http://localhost:8501"
 	@which open >/dev/null && open http://localhost:8501 || which xdg-open >/dev/null && xdg-open http://localhost:8501 || echo "Please open http://localhost:8501 in your browser"

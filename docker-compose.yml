@@ -1,81 +1,112 @@
 services:
-  # PostgreSQL Database
+  # ─────────────────────────────
+  # 📦 PostgreSQL Database
+  # ─────────────────────────────
   postgres:
     image: postgres:15
     container_name: crypto_warehouse
+    env_file:
+      - .env
     environment:
-      POSTGRES_DB: crypto_warehouse
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: crypto_password_123
-      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_DB: ${DB_NAME:?DB_NAME is required}
+      POSTGRES_USER: ${DB_USER:?DB_USER is required}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+    restart: unless-stopped
     ports:
-      - '5432:5432'
+      - '5432:5432' # Expose only if you want local dev access
+    networks:
+      - crypto_pipeline_network
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init-scripts:/docker-entrypoint-initdb.d
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres']
-      interval: 30s
-      timeout: 10s
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER} -d ${DB_NAME}']
+      interval: 10s
+      timeout: 5s
       retries: 5
 
-  # Redis for caching and task queue
+  # ─────────────────────────────
+  # ⚡ Redis for caching & task queue
+  # ─────────────────────────────
   redis:
     image: redis:7-alpine
     container_name: crypto_redis
+    env_file:
+      - .env
     ports:
       - '6379:6379'
+    networks:
+      - crypto_pipeline_network
     volumes:
       - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  # Main Pipeline Application
+  # ─────────────────────────────
+  # 🛠️ Main Pipeline Application
+  # ─────────────────────────────
   crypto-pipeline:
     build:
       context: .
-      dockerfile: Dockerfile.pipeline
+      dockerfile: docker/Dockerfile.pipeline
     container_name: crypto_pipeline
+    env_file:
+      - .env
     environment:
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_NAME=crypto_warehouse
-      - DB_USER=postgres
-      - DB_PASSWORD=crypto_password_123
-      - REDIS_URL=redis://redis:6379
-      - LOG_LEVEL=INFO
-      - COINGECKO_API_KEY=CG-Ug4vCfhbKMgCqUFB6DXaDnoL
+      DB_HOST: postgres
+      REDIS_URL: ${REDIS_URL:?REDIS_URL is required}
+      PYTHONUNBUFFERED: 1
+    networks:
+      - crypto_pipeline_network
     depends_on:
       postgres:
         condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
     volumes:
       - ./logs:/app/logs
+      - ./data:/app/data
     restart: unless-stopped
     healthcheck:
-      test: ['CMD-SHELL', 'python -c "import sys; sys.exit(0)"']
+      test:
+        [
+          'CMD-SHELL',
+          "python -c 'from src.monitoring.health_monitor import check_health; check_health()'",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
 
-  # DBT Service
+  # ─────────────────────────────
+  # 📊 DBT Service
+  # ─────────────────────────────
   dbt-service:
     build:
       context: .
-      dockerfile: Dockerfile.dbt
+      dockerfile: docker/Dockerfile.dbt
     container_name: crypto_dbt
+    env_file:
+      - .env
     environment:
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_NAME=crypto_warehouse
-      - DB_USER=postgres
-      - DB_PASSWORD=crypto_password_123
+      DB_HOST: postgres
+    networks:
+      - crypto_pipeline_network
     depends_on:
       postgres:
         condition: service_healthy
     volumes:
       - ./dbt:/app/dbt
       - ./dbt_logs:/app/logs
-      - ./profiles.yml:/root/.dbt/profiles.yml
+      - ./config/profiles.yml:/root/.dbt/profiles.yml
     command: ['dbt', 'run', '--project-dir', '/app/dbt']
     healthcheck:
       test:
@@ -84,18 +115,20 @@ services:
       timeout: 10s
       retries: 3
 
-  # Dashboard Service (Streamlit)
+  # ─────────────────────────────
+  # 📈 Dashboard (Streamlit)
+  # ─────────────────────────────
   dashboard:
     build:
       context: .
-      dockerfile: Dockerfile.dashboard
+      dockerfile: docker/Dockerfile.dashboard
     container_name: crypto_dashboard
+    env_file:
+      - .env
     environment:
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_NAME=crypto_warehouse
-      - DB_USER=postgres
-      - DB_PASSWORD=crypto_password_123
+      DB_HOST: postgres
+    networks:
+      - crypto_pipeline_network
     ports:
       - '8501:8501'
     depends_on:
@@ -109,25 +142,46 @@ services:
       timeout: 10s
       retries: 3
 
-  # Monitoring Service (Grafana)
+  # ─────────────────────────────
+  # 📊 Grafana Monitoring
+  # ─────────────────────────────
   grafana:
     image: grafana/grafana:latest
     container_name: crypto_grafana
+    env_file:
+      - .env
     ports:
       - '4001:3000'
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD is required}
+      GF_SERVER_ROOT_URL: http://localhost:4001
+      GF_SECURITY_ALLOW_EMBEDDING: true
+    networks:
+      - crypto_pipeline_network
     volumes:
       - grafana_data:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
 
+# ─────────────────────────────
+# 📦 Volumes
+# ─────────────────────────────
 volumes:
   postgres_data:
   redis_data:
   grafana_data:
 
+# ─────────────────────────────
+# 🌐 Networks
+# ─────────────────────────────
 networks:
-  default:
+  crypto_pipeline_network:
+    driver: bridge
     name: crypto_pipeline_network
+    driver_opts:
+      com.docker.network.bridge.name: crypto_net
+      com.docker.network.driver.mtu: 1500

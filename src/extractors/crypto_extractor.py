@@ -1,13 +1,13 @@
 import asyncio
 import logging
-import os
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 import aiohttp
 import backoff
 
-from config.settings import PipelineConfig
+from src.config.settings import PipelineConfig
+from src.extractors.secrets import get_coingecko_api_key  # 🔑 secure import
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +16,7 @@ class CryptoDataExtractor:
     def __init__(self, config: PipelineConfig):
         self.config = config
         self.base_url = "https://api.coingecko.com/api/v3"
-        self.api_key = os.getenv("COINGECKO_API_KEY", "CG-Ug4vCfhbKMgCqUFB6DXaDnoL")
+        self.api_key = get_coingecko_api_key()  # 🔐 secure fetch
         self.session: Optional[aiohttp.ClientSession] = None
 
     async def __aenter__(self):
@@ -43,7 +43,7 @@ class CryptoDataExtractor:
 
         headers = {
             "accept": "application/json",
-            "x-cg-demo-api-key": self.api_key,  # CoinGecko demo header
+            "x-cg-demo-api-key": self.api_key,  # ✅ secured
         }
 
         params = {
@@ -57,25 +57,17 @@ class CryptoDataExtractor:
         }
 
         logger.info(f"Fetching data for: {crypto_ids}")
-        logger.debug(f"Request URL: {url}")
-        logger.debug(f"Request params: {params}")
 
         async with self.session.get(url, headers=headers, params=params) as response:
             if response.status == 429:
                 logger.warning("Rate limit hit. Retrying after cooldown...")
                 await asyncio.sleep(60)
                 raise aiohttp.ClientError(f"Rate limit exceeded: {response.status}")
-            elif response.status == 401:
+            elif response.status in (401, 403):
                 error_msg = await response.text()
-                logger.error(f"API Authentication Error {response.status}: {error_msg}")
+                logger.error(f"API Auth Error {response.status}: {error_msg}")
                 raise aiohttp.ClientError(
-                    f"API Authentication Error {response.status}: Check your API key"
-                )
-            elif response.status == 403:
-                error_msg = await response.text()
-                logger.error(f"API Forbidden Error {response.status}: {error_msg}")
-                raise aiohttp.ClientError(
-                    f"API Forbidden Error {response.status}: Check your API key permissions"
+                    f"API key issue ({response.status}): {error_msg}"
                 )
             elif response.status != 200:
                 error_msg = await response.text()
@@ -93,15 +85,9 @@ class CryptoDataExtractor:
                     "market_cap": coin.get("market_cap"),
                     "total_volume": coin.get("total_volume"),
                     "price_change_24h": coin.get("price_change_24h"),
-                    "price_change_percentage_24h": coin.get(
-                        "price_change_percentage_24h"
-                    ),
-                    "price_change_percentage_1h": coin.get(
-                        "price_change_percentage_1h_in_currency"
-                    ),
-                    "price_change_percentage_7d": coin.get(
-                        "price_change_percentage_7d_in_currency"
-                    ),
+                    "price_change_percentage_24h": coin.get("price_change_percentage_24h"),
+                    "price_change_percentage_1h": coin.get("price_change_percentage_1h_in_currency"),
+                    "price_change_percentage_7d": coin.get("price_change_percentage_7d_in_currency"),
                     "market_cap_rank": coin.get("market_cap_rank"),
                     "circulating_supply": coin.get("circulating_supply"),
                     "total_supply": coin.get("total_supply"),

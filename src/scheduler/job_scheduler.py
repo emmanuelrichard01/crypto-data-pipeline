@@ -6,7 +6,7 @@ from datetime import datetime
 
 import schedule
 
-from pipeline.orchestrator import CryptoPipelineOrchestrator
+from src.pipeline.orchestrator import CryptoPipelineOrchestrator
 
 logger = logging.getLogger(__name__)
 

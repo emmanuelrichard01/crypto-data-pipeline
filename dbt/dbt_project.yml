@@ -37,7 +37,6 @@ tests:
 seeds:
   crypto_analytics:
     crypto_prices_raw:
-      +schema: public
       +column_types:
         id: bigint
         symbol: text
@@ -51,7 +50,6 @@ seeds:
         extracted_at: timestamp
         created_at: timestamp
     pipeline_runs:
-      +schema: public
       +column_types:
         id: bigint
         run_id: text

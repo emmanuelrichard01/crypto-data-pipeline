@@ -1,49 +1,53 @@
-create table "crypto_warehouse"."public_staging"."stg_crypto_prices__dbt_tmp"
 
 
-as
-
-(
 
 
-    with source_data as (
-        select
-            id as price_id,
-            current_price as price_usd,
-            market_cap,
-            total_volume as volume_24h,
-            price_change_24h,
-            price_change_percentage_24h as price_change_pct_24h,
-            market_cap_rank,
-            extracted_at,
-            created_at,
-            UPPER(TRIM(symbol)) as symbol,
-            TRIM(name) as crypto_name,
+  create  table "crypto_warehouse"."public_staging"."stg_crypto_prices__dbt_tmp"
 
-            COALESCE(current_price <= 0, false) as is_invalid_price,
-            COALESCE(market_cap <= 0, false) as is_invalid_market_cap,
-            COALESCE(total_volume < 0, false) as is_invalid_volume
-        from "crypto_warehouse"."public"."crypto_prices_raw"
-    ),
 
-    cleaned_data as (
-        select
-            *,
-            DATE(extracted_at) as extraction_date,
-            DATE_TRUNC('hour', extracted_at) as extraction_hour,
-            case
-                when LAG(price_usd) over (
-                    partition by symbol order by extracted_at
-                ) is not null then
-                    ((price_usd - LAG(price_usd) over (
-                        partition by symbol order by extracted_at
-                    )) / LAG(price_usd) over (
-                        partition by symbol order by extracted_at
-                    )) * 100
-            end as price_change_pct_from_previous
-        from source_data
-        where not is_invalid_price and not is_invalid_volume
-    )
+    as
 
-    select * from cleaned_data
-);
+  (
+
+
+WITH source_data AS (
+    SELECT
+        id AS price_id,
+        current_price AS price_usd,
+        market_cap,
+        total_volume AS volume_24h,
+        price_change_24h,
+        price_change_percentage_24h AS price_change_pct_24h,
+        market_cap_rank,
+        extracted_at,
+        created_at,
+        UPPER(TRIM(symbol)) AS symbol,
+        TRIM(name) AS crypto_name,
+
+        COALESCE(current_price <= 0, FALSE) AS is_invalid_price,
+        COALESCE(market_cap <= 0, FALSE) AS is_invalid_market_cap,
+        COALESCE(total_volume < 0, FALSE) AS is_invalid_volume
+    FROM "crypto_warehouse"."public"."crypto_prices_raw"
+),
+
+cleaned_data AS (
+    SELECT
+        *,
+        DATE(extracted_at) AS extraction_date,
+        DATE_TRUNC('hour', extracted_at) AS extraction_hour,
+        CASE
+            WHEN LAG(price_usd) OVER (
+                PARTITION BY symbol ORDER BY extracted_at
+            ) IS NOT NULL THEN
+                ((price_usd - LAG(price_usd) OVER (
+                    PARTITION BY symbol ORDER BY extracted_at
+                )) / LAG(price_usd) OVER (
+                    PARTITION BY symbol ORDER BY extracted_at
+                )) * 100
+        END AS price_change_pct_from_previous
+    FROM source_data
+    WHERE NOT is_invalid_price AND NOT is_invalid_volume
+)
+
+SELECT * FROM cleaned_data
+  );

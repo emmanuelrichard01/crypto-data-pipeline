@@ -7,6 +7,9 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 from sqlalchemy import create_engine
+from dotenv import load_dotenv
+load_dotenv()
+
 
 # ─────────────────────────────
 # ⚙️ PAGE CONFIG (must be first Streamlit call!)
@@ -53,17 +56,19 @@ logger = logging.getLogger(__name__)
 @st.cache_resource
 def get_engine():
     try:
-        # Load environment variables
-        from dotenv import load_dotenv
+        # Check for required environment variables
+        required_env_vars = ['DB_USER', 'DB_PASSWORD', 'DB_HOST', 'DB_PORT', 'DB_NAME']
+        missing_vars = [var for var in required_env_vars if not os.getenv(var)]
 
-        load_dotenv()
+        if missing_vars:
+            raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
 
         conn_str = (
-            f"postgresql://{os.getenv('DB_USER', 'postgres')}:"
-            f"{os.getenv('DB_PASSWORD', 'crypto_password_123')}@"
-            f"{os.getenv('DB_HOST', 'localhost')}:"
-            f"{os.getenv('DB_PORT', '5432')}/"
-            f"{os.getenv('DB_NAME', 'crypto_warehouse')}"
+            f"postgresql://{os.getenv('DB_USER')}:"
+            f"{os.getenv('DB_PASSWORD')}@"
+            f"{os.getenv('DB_HOST')}:"
+            f"{os.getenv('DB_PORT')}/"
+            f"{os.getenv('DB_NAME')}"
         )
         return create_engine(conn_str)
     except Exception as e:
@@ -153,11 +158,18 @@ st.subheader("🏥 System Health")
 try:
     latest_df, count_df = load_system_health()
     latest_time = pd.to_datetime(latest_df["latest"].iloc[0])
-    total_records = int(count_df["total_records"].iloc[0])
-    unique_symbols = int(count_df["unique_symbols"].iloc[0])
-    avg_price = float(count_df["avg_price"].iloc[0] or 0)
 
-    minutes_since = (datetime.utcnow() - latest_time).total_seconds() / 60
+    if pd.isna(latest_time) or latest_time is None:
+        st.warning("⚠️ No records found yet. Please run the pipeline to ingest data.")
+        latest_time = datetime.utcnow()
+        minutes_since = 9999
+    else:
+        minutes_since = (datetime.utcnow() - latest_time).total_seconds() / 60
+
+    total_records = int(count_df.get("total_records", [0])[0])
+    unique_symbols = int(count_df.get("unique_symbols", [0])[0])
+    avg_price = float(count_df.get("avg_price", [0])[0] or 0)
+
     health_status = "🟢 Healthy" if minutes_since <= 120 else "🔴 Unhealthy"
 
     col1, col2, col3, col4 = st.columns(4)
@@ -168,7 +180,7 @@ try:
 
 except Exception as e:
     logger.exception("Failed to load system health")
-    st.error("⚠️ Failed to load system health metrics.")
+    st.error("⚠️ Failed to load system health metrics. Ensure dbt models are built.")
 
 st.markdown("---")
 

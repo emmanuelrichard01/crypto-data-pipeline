@@ -1,0 +1,34 @@
+FROM python:3.11-slim-bullseye
+
+WORKDIR /app
+
+# System dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    gcc \
+    libpq-dev \
+    libffi-dev \
+    libssl-dev \
+    postgresql-client \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Upgrade pip and install build tools
+RUN pip install --upgrade pip setuptools wheel build
+
+# Copy and install Python dependencies
+COPY config/requirements-dashboard.txt .
+RUN pip install --no-cache-dir -r requirements-dashboard.txt \
+    -i https://pypi.org/simple --timeout 100
+
+# Copy dashboard app
+COPY dashboard/ ./dashboard/
+
+# Expose Streamlit port
+EXPOSE 8501
+
+# Run dashboard
+CMD ["streamlit", "run", "dashboard/app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+
+LABEL maintainer="emma.moghalu@gmail.com"
+LABEL description="Crypto dashboard with Streamlit"

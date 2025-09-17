@@ -10,9 +10,9 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
 
-from config.settings import DatabaseConfig
-from models.base import Base
-from models.schemas import PipelineRun
+from src.config.settings import DatabaseConfig
+from src.models.base import Base
+from src.models.schemas import PipelineRun
 
 logger = logging.getLogger(__name__)
 
@@ -89,7 +89,7 @@ class WarehouseLoader:
     ):
         """Insert or update a pipeline run log"""
         run_data = {
-            "id": uuid.uuid4(),  # You may use uuid5 for idempotency
+            "id": uuid.uuid4(),
             "run_id": run_id,
             "stage": stage,
             "status": status,
@@ -101,9 +101,10 @@ class WarehouseLoader:
 
         try:
             with self.get_session() as session:
+                # Create a new PipelineRun or update existing one
                 stmt = (
-                    insert(PipelineRun)
-                    .values(**run_data)
+                    insert(PipelineRun.__table__)
+                    .values(run_data)
                     .on_conflict_do_update(
                         index_elements=["run_id", "stage"],
                         set_={

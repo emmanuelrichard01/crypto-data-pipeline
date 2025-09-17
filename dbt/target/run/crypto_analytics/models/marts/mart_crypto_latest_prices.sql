@@ -1,65 +1,70 @@
-create table "crypto_warehouse"."public_marts"."mart_crypto_latest_prices__dbt_tmp"
 
+  
+    
 
-as
+  create  table "crypto_warehouse"."public_marts"."mart_crypto_latest_prices__dbt_tmp"
+  
+  
+    as
+  
+  (
+    
 
-(
+WITH latest_prices AS (
+    SELECT
+        symbol,
+        crypto_name,
+        price_usd,
+        market_cap,
+        volume_24h,
+        price_change_24h,
+        price_change_pct_24h,
+        market_cap_rank,
+        extracted_at,
 
+        ROW_NUMBER() OVER (
+            PARTITION BY symbol
+            ORDER BY extracted_at DESC
+        ) AS rn
 
-    with latest_prices as (
-        select
-            symbol,
-            crypto_name,
-            price_usd,
-            market_cap,
-            volume_24h,
-            price_change_24h,
-            price_change_pct_24h,
-            market_cap_rank,
-            extracted_at,
+    FROM "crypto_warehouse"."public_staging"."stg_crypto_prices"
+    WHERE extraction_date = CURRENT_DATE
+),
 
-            ROW_NUMBER() over (
-                partition by symbol
-                order by extracted_at desc
-            ) as rn
+price_changes AS (
+    SELECT
+        symbol,
+        crypto_name,
+        price_usd AS current_price,
+        market_cap,
+        volume_24h,
+        price_change_24h,
+        price_change_pct_24h,
+        market_cap_rank,
+        extracted_at AS last_updated,
 
-        from "crypto_warehouse"."public_staging"."stg_crypto_prices"
-        where extraction_date = CURRENT_DATE
-    ),
+        -- Calculate additional metrics
+        CASE
+            WHEN price_change_pct_24h > 10 THEN 'Strong Gain'
+            WHEN price_change_pct_24h > 5 THEN 'Moderate Gain'
+            WHEN price_change_pct_24h > 0 THEN 'Slight Gain'
+            WHEN price_change_pct_24h > -5 THEN 'Slight Loss'
+            WHEN price_change_pct_24h > -10 THEN 'Moderate Loss'
+            ELSE 'Strong Loss'
+        END AS price_trend_category,
 
-    price_changes as (
-        select
-            symbol,
-            crypto_name,
-            price_usd as current_price,
-            market_cap,
-            volume_24h,
-            price_change_24h,
-            price_change_pct_24h,
-            market_cap_rank,
-            extracted_at as last_updated,
+        -- Market cap category
+        CASE
+            WHEN market_cap_rank <= 10 THEN 'Large Cap'
+            WHEN market_cap_rank <= 50 THEN 'Mid Cap'
+            WHEN market_cap_rank <= 100 THEN 'Small Cap'
+            ELSE 'Micro Cap'
+        END AS market_cap_category
 
-            -- Calculate additional metrics
-            case
-                when price_change_pct_24h > 10 then 'Strong Gain'
-                when price_change_pct_24h > 5 then 'Moderate Gain'
-                when price_change_pct_24h > 0 then 'Slight Gain'
-                when price_change_pct_24h > -5 then 'Slight Loss'
-                when price_change_pct_24h > -10 then 'Moderate Loss'
-                else 'Strong Loss'
-            end as price_trend_category,
+    FROM latest_prices
+    WHERE rn = 1
+)
 
-            -- Market cap category
-            case
-                when market_cap_rank <= 10 then 'Large Cap'
-                when market_cap_rank <= 50 then 'Mid Cap'
-                when market_cap_rank <= 100 then 'Small Cap'
-                else 'Micro Cap'
-            end as market_cap_category
-
-        from latest_prices
-        where rn = 1
-    )
-
-    select * from price_changes
-);
+SELECT * FROM price_changes
+  );
+  

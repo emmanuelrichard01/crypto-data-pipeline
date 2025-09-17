@@ -370,12 +370,69 @@ We welcome contributions! Please follow these steps:
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
+### Version Control Guidelines
+
+#### Branch Strategy
+
+- `main`: Production-ready code
+- `develop`: Integration branch for features
+- `feature/*`: New features or enhancements
+- `fix/*`: Bug fixes
+- `docs/*`: Documentation updates
+- `release/*`: Release preparation
+- `hotfix/*`: Urgent production fixes
+
+#### Commit Messages
+
+Format: `<type>(<scope>): <description>`
+
+Types:
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation
+- `style`: Formatting
+- `refactor`: Code restructuring
+- `test`: Adding tests
+- `chore`: Maintenance
+
+Example:
+```
+feat(extractor): add support for additional crypto pairs
+fix(pipeline): resolve data freshness monitoring issue
+docs(readme): update deployment instructions
+```
+
+### Protected Paths
+
+The following paths are protected and require review:
+- `/src/`
+- `/alembic/versions/`
+- `/dbt/models/`
+- `docker-compose.yml`
+- `Dockerfile.*`
+
 ### Pull Request Guidelines
 
-- Include tests for new functionality
-- Update documentation as needed
-- Ensure all CI checks pass
-- Follow the existing code style
+#### Required Components
+- Clear description of changes
+- Related issue references
+- Tests for new functionality
+- Updated documentation
+- Changelog entry
+
+#### Review Process
+1. CI checks must pass
+2. Code review by at least one maintainer
+3. Successful test suite execution
+4. Documentation review
+5. Changelog verification
+
+#### Quality Standards
+- Include unit tests
+- Maintain 80%+ test coverage
+- Follow [PEP 8](https://peps.python.org/pep-0008/)
+- Use type hints
+- Add docstrings for functions/classes
 
 ## 👨‍💻 Author
 

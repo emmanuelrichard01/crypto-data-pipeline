@@ -12,15 +12,11 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class DatabaseConfig:
-    host: str = field(default_factory=lambda: os.getenv("DB_HOST", "localhost"))
-    port: int = field(default_factory=lambda: int(os.getenv("DB_PORT", "5432")))
-    database: str = field(
-        default_factory=lambda: os.getenv("DB_NAME", "crypto_warehouse")
-    )
-    user: str = field(default_factory=lambda: os.getenv("DB_USER", "postgres"))
-    password: str = field(
-        default_factory=lambda: os.getenv("DB_PASSWORD", "crypto_password_123")
-    )
+    host: str = field(default_factory=lambda: os.environ["DB_HOST"])
+    port: int = field(default_factory=lambda: int(os.environ["DB_PORT"]))
+    database: str = field(default_factory=lambda: os.environ["DB_NAME"])
+    user: str = field(default_factory=lambda: os.environ["DB_USER"])
+    password: str = field(default_factory=lambda: os.environ["DB_PASSWORD"])
     batch_size: int = field(default_factory=lambda: int(os.getenv("BATCH_SIZE", "100")))
 
     def __post_init__(self):
