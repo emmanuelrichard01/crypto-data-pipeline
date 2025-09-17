@@ -85,9 +85,15 @@ class CryptoDataExtractor:
                     "market_cap": coin.get("market_cap"),
                     "total_volume": coin.get("total_volume"),
                     "price_change_24h": coin.get("price_change_24h"),
-                    "price_change_percentage_24h": coin.get("price_change_percentage_24h"),
-                    "price_change_percentage_1h": coin.get("price_change_percentage_1h_in_currency"),
-                    "price_change_percentage_7d": coin.get("price_change_percentage_7d_in_currency"),
+                    "price_change_percentage_24h": coin.get(
+                        "price_change_percentage_24h"
+                    ),
+                    "price_change_percentage_1h": coin.get(
+                        "price_change_percentage_1h_in_currency"
+                    ),
+                    "price_change_percentage_7d": coin.get(
+                        "price_change_percentage_7d_in_currency"
+                    ),
                     "market_cap_rank": coin.get("market_cap_rank"),
                     "circulating_supply": coin.get("circulating_supply"),
                     "total_supply": coin.get("total_supply"),

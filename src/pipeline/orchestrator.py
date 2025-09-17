@@ -17,8 +17,12 @@ class CryptoPipelineOrchestrator:
         self.db_config = db_config
         logger.info("Initializing WarehouseLoader...")
         self.loader = WarehouseLoader(db_config)
-        logger.info(f"Pipeline configured with intervals: {config.extraction_interval_minutes} minutes")
-        logger.info(f"Monitoring cryptocurrencies: {', '.join(config.cryptocurrencies)}")
+        logger.info(
+            f"Pipeline configured with intervals: {config.extraction_interval_minutes} minutes"
+        )
+        logger.info(
+            f"Monitoring cryptocurrencies: {', '.join(config.cryptocurrencies)}"
+        )
 
     async def run_extraction_pipeline(self) -> Dict[str, Any]:
         """Run the complete extraction and loading pipeline"""

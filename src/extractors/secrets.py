@@ -1,5 +1,6 @@
 import os
 
+
 def get_coingecko_api_key() -> str:
     """Get CoinGecko API key from environment variables."""
     api_key = os.getenv("COINGECKO_API_KEY")

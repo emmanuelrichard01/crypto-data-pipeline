@@ -6,8 +6,9 @@ from datetime import datetime
 import pandas as pd
 import plotly.express as px
 import streamlit as st
-from sqlalchemy import create_engine
 from dotenv import load_dotenv
+from sqlalchemy import create_engine
+
 load_dotenv()
 
 
@@ -57,11 +58,13 @@ logger = logging.getLogger(__name__)
 def get_engine():
     try:
         # Check for required environment variables
-        required_env_vars = ['DB_USER', 'DB_PASSWORD', 'DB_HOST', 'DB_PORT', 'DB_NAME']
+        required_env_vars = ["DB_USER", "DB_PASSWORD", "DB_HOST", "DB_PORT", "DB_NAME"]
         missing_vars = [var for var in required_env_vars if not os.getenv(var)]
 
         if missing_vars:
-            raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
+            raise ValueError(
+                f"Missing required environment variables: {', '.join(missing_vars)}"
+            )
 
         conn_str = (
             f"postgresql://{os.getenv('DB_USER')}:"
